@@ -1,0 +1,217 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces (Warm Linen & Deep Emerald — Platform UI) */
+  --bg-canvas: #f8f7f4;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1efea;
+  --bg-accent-soft: #e6f2ec;
+  --bg-gold-soft: #fbf4e6;
+  --bg-dark: #131c18;
+
+  /* Text */
+  --text-primary: #16201b;
+  --text-secondary: #526058;
+  --text-inverse: #f8f7f4;
+  --text-inverse-muted: #b5c2ba;
+
+  /* Brand Accents */
+  --accent-primary: #1b5e47;
+  --accent-hover: #144a37;
+  --accent-pressed: #0f3a2b;
+  --accent-gold: #d4a359;
+
+  /* Borders & Status */
+  --border-hairline: #e4e2dc;
+  --border-control: #747d77;
+  --status-success: #157347;
+  --status-warning: #9a6700;
+  --status-error: #b4233c;
+  --focus-ring: #1b5e47;
+
+  /* Typography */
+  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-instrument), "Instrument Serif", Georgia, serif;
+
+  /* Radii */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-stage: 28px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-card-hover: 0 12px 32px -12px rgb(22 32 27 / 8%);
+  --shadow-stage: 0 24px 56px -16px rgb(22 32 27 / 12%);
+  --shadow-overlay: 0 28px 72px -16px rgb(22 32 27 / 20%);
+
+  /* Motion */
+  --ease-clean: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 150ms;
+  --dur-base: 280ms;
+  --dur-reveal: 420ms;
+  --dur-unbox: 800ms;
+}
+
+@theme inline {
+  --color-canvas: var(--bg-canvas);
+  --color-surface: var(--bg-surface);
+  --color-subtle: var(--bg-subtle);
+  --color-accent-soft: var(--bg-accent-soft);
+  --color-gold-soft: var(--bg-gold-soft);
+  --color-dark: var(--bg-dark);
+
+  --color-ink: var(--text-primary);
+  --color-muted: var(--text-secondary);
+  --color-inverse: var(--text-inverse);
+  --color-inverse-muted: var(--text-inverse-muted);
+
+  --color-emerald-brand: var(--accent-primary);
+  --color-emerald-hover: var(--accent-hover);
+  --color-emerald-pressed: var(--accent-pressed);
+  --color-gold: var(--accent-gold);
+
+  --color-hairline: var(--border-hairline);
+  --color-control: var(--border-control);
+  --color-success: var(--status-success);
+  --color-warning: var(--status-warning);
+  --color-error: var(--status-error);
+
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+  --font-cozy: var(--font-nunito), system-ui, sans-serif;
+  --font-serif: var(--font-instrument), Georgia, serif;
+  --font-display-alt: var(--font-bricolage), system-ui, sans-serif;
+  --font-editorial-alt: var(--font-playfair), Georgia, serif;
+  --font-hand: var(--font-caveat), cursive;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+[data-surface="dark"] {
+  --focus-ring: #e6f2ec;
+}
+
+:focus-visible {
+  outline: 2.5px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 3D Flip Card Helpers */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Scoped styling strictly for 3D Cozy Indonesian Village products (Opsi 1: Anyaman & Jurnal Desa) */
+[data-desa-world] {
+  font-family: var(--font-cozy);
+}
+
+[data-desa-world] a[href],
+[data-desa-world] button:not(:disabled),
+[data-desa-world] select:not(:disabled),
+[data-desa-world] label[for] {
+  cursor: pointer;
+}
+
+[data-desa-world] :disabled {
+  cursor: not-allowed;
+}
+
+[data-desa-world] .desa-woven-pill {
+  background-color: #f7f1e3;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(183, 155, 116, 0.14) 0px,
+      rgba(183, 155, 116, 0.14) 4px,
+      transparent 4px,
+      transparent 9px
+    );
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 252, 245, 0.72),
+    0 8px 22px -6px rgba(42, 28, 16, 0.28);
+}
+
+[data-desa-world] .desa-icon-tile {
+  background-color: #f7f1e3;
+  border: 2px solid #b79b74;
+  box-shadow:
+    0 3px 0 #8c6d46,
+    0 8px 18px -6px rgba(32, 22, 12, 0.28);
+  transition: transform 140ms ease, background-color 140ms ease;
+}
+
+[data-desa-world] .desa-icon-tile:hover {
+  background-color: #efe5ce;
+  transform: translateY(-1px);
+}
+
+[data-desa-world] .desa-icon-tile:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #8c6d46;
+}
+
+[data-desa-world] .desa-scroll::-webkit-scrollbar {
+  width: 7px;
+}
+
+[data-desa-world] .desa-scroll::-webkit-scrollbar-track {
+  background: rgba(62, 43, 30, 0.08);
+  border-radius: 999px;
+}
+
+[data-desa-world] .desa-scroll::-webkit-scrollbar-thumb {
+  background: rgba(140, 109, 70, 0.42);
+  border-radius: 999px;
+}
+
+[data-desa-world] .desa-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+[data-desa-world] .desa-no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

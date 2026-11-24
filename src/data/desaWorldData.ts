@@ -66,6 +66,45 @@ export interface DesaQuizItem {
   wrongFeedback: string;
 }
 
+export interface DesaWorldUiCopy {
+  preloaderTitle: string;
+  preloaderSubtitle: string;
+  coverSubtitle: string;
+  coverCta: string;
+  pickerTitle: string;
+  pickerSubtitle: string;
+  pickerCta: string;
+  pickerAttireFemale: string;
+  pickerAttireMale: string;
+  introEyebrow: string;
+  introSubtitle: string;
+  mapTitle: string;
+  mapSubtitle: string;
+  npcSectionLabel: string;
+  progressTitle: string;
+  journalTitle: string;
+  journalButtonLabel: string;
+  footerCaption: string;
+  wishSuccessToast: string;
+  wishFormSentNote: string;
+  wishSectionTitle: string;
+  galleryFooterLabel: string;
+  icsDescription: string;
+  icsFilename: string;
+  qrPrefix: string;
+}
+
+export interface DesaCoupleProfile {
+  groom: {
+    fullName: string;
+    parents: string;
+  };
+  bride: {
+    fullName: string;
+    parents: string;
+  };
+}
+
 export interface DesaWorldPayload {
   mode: DesaMode;
   eyebrow: string;
@@ -77,6 +116,8 @@ export interface DesaWorldPayload {
   defaultGuestName: string;
   gapuraTitle: string;
   gapuraSubtitle: string;
+  coupleProfile?: DesaCoupleProfile;
+  ui: DesaWorldUiCopy;
   stations: DesaStationMeta[];
   npcs: DesaNpcData[];
   initialWishes: DesaWishItem[];
@@ -122,62 +163,62 @@ export interface DesaWorldPayload {
 const WEDDING_STATIONS: DesaStationMeta[] = [
   {
     id: "surat",
-    dockLabel: "Surat buat kamu",
-    markerLabel: "Surat buat kamu",
+    dockLabel: "Sambutan",
+    markerLabel: "Sambutan",
     ribbon: "Undangan Pernikahan",
-    title: "Menghitung Hari Bahagia",
-    x: 3.4,
-    z: 2.2,
+    title: "Walimatul Ursy",
+    x: 3.2,
+    z: 2.8,
     interactRadius: 2.3,
   },
   {
     id: "acara",
-    dockLabel: "Acara",
-    markerLabel: "Pendopo Acara",
-    ribbon: "Jadwal & Lokasi",
+    dockLabel: "Akad & Resepsi",
+    markerLabel: "Pendopo Pelaminan",
+    ribbon: "Waktu & Tempat",
     title: "Rangkaian Acara",
-    x: 6.2,
-    z: -3.6,
-    interactRadius: 2.7,
+    x: 5.1,
+    z: -2.7,
+    interactRadius: 3.1,
   },
   {
     id: "ucapan",
     dockLabel: "Ucapan & RSVP",
-    markerLabel: "Ucapan & RSVP",
+    markerLabel: "Buku Tamu & RSVP",
     ribbon: "Buku Tamu",
-    title: "Doa Restu & Konfirmasi",
-    x: -2.0,
-    z: 1.5,
+    title: "Doa Restu & Kehadiran",
+    x: -1.9,
+    z: 1.6,
     interactRadius: 2.3,
   },
   {
     id: "kado",
-    dockLabel: "Kado",
-    markerLabel: "Meja Hantaran",
+    dockLabel: "Tanda Kasih",
+    markerLabel: "Tanda Kasih",
     ribbon: "Tanda Kasih",
-    title: "Amplop & Hadiah Digital",
-    x: 1.8,
-    z: -2.4,
+    title: "Amplop Digital & Kado",
+    x: 1.2,
+    z: -2.2,
     interactRadius: 2.3,
   },
   {
     id: "cerita",
-    dockLabel: "Cerita Kami",
-    markerLabel: "Papan Cerita",
-    ribbon: "Perjalanan",
-    title: "Jejak Cerita Kami",
-    x: -3.2,
-    z: -2.8,
-    interactRadius: 2.3,
+    dockLabel: "Kisah Kami",
+    markerLabel: "Kisah Kami",
+    ribbon: "Perjalanan Cinta",
+    title: "Kisah Cinta Kami",
+    x: -2.1,
+    z: -2.9,
+    interactRadius: 2.4,
   },
   {
     id: "galeri",
     dockLabel: "Galeri",
-    markerLabel: "Pigura Galeri",
-    ribbon: "Album Desa",
+    markerLabel: "Galeri Momen",
+    ribbon: "Album Pernikahan",
     title: "Galeri Momen",
-    x: 6.8,
-    z: 2.6,
+    x: 6.4,
+    z: 1.35,
     interactRadius: 2.3,
   },
 ];
@@ -189,8 +230,8 @@ const KADO_STATIONS: DesaStationMeta[] = [
     markerLabel: "Kotak Surat",
     ribbon: "Kado Personal",
     title: "Sepucuk Surat Dari Hati",
-    x: 3.4,
-    z: 2.2,
+    x: 3.2,
+    z: 2.8,
     interactRadius: 2.3,
   },
   {
@@ -199,9 +240,9 @@ const KADO_STATIONS: DesaStationMeta[] = [
     markerLabel: "Pendopo Suara",
     ribbon: "Rekaman Hangat",
     title: "Pesan Suara Spesial",
-    x: 6.2,
-    z: -3.6,
-    interactRadius: 2.7,
+    x: 5.1,
+    z: -2.7,
+    interactRadius: 3.1,
   },
   {
     id: "ucapan",
@@ -209,8 +250,8 @@ const KADO_STATIONS: DesaStationMeta[] = [
     markerLabel: "Bale Kuis",
     ribbon: "Tebak Momen",
     title: "Kuis Kenangan Kita",
-    x: -2.0,
-    z: 1.5,
+    x: -1.9,
+    z: 1.6,
     interactRadius: 2.3,
   },
   {
@@ -219,8 +260,8 @@ const KADO_STATIONS: DesaStationMeta[] = [
     markerLabel: "Meja Hadiah",
     ribbon: "Gosok & Buka",
     title: "Voucher Kejutan Untukmu",
-    x: 1.8,
-    z: -2.4,
+    x: 1.2,
+    z: -2.2,
     interactRadius: 2.3,
   },
   {
@@ -229,9 +270,9 @@ const KADO_STATIONS: DesaStationMeta[] = [
     markerLabel: "Papan Cerita",
     ribbon: "Album Waktu",
     title: "Bab Perjalanan Kita",
-    x: -3.2,
-    z: -2.8,
-    interactRadius: 2.3,
+    x: -2.1,
+    z: -2.9,
+    interactRadius: 2.4,
   },
   {
     id: "galeri",
@@ -239,13 +280,13 @@ const KADO_STATIONS: DesaStationMeta[] = [
     markerLabel: "Pigura Galeri",
     ribbon: "Foto & Catatan",
     title: "Galeri Balik Kartu",
-    x: 6.8,
-    z: 2.6,
+    x: 6.4,
+    z: 1.35,
     interactRadius: 2.3,
   },
 ];
 
-const VILLAGE_NPCS: DesaNpcData[] = [
+const WEDDING_GUESTS: DesaNpcData[] = [
   {
     id: "npc-raka",
     name: "Bagus Pratama",
@@ -254,9 +295,9 @@ const VILLAGE_NPCS: DesaNpcData[] = [
     outfitColor: "#2D6A4F",
     accentColor: "#D4A359",
     hairColor: "#2B1E17",
-    hatType: "caping",
+    hatType: "none",
     defaultWish:
-      "Selamat menempuh hidup baru, Raka & Nadya! Semoga rumah tangganya selalu teduh dan penuh tawa seperti pagi di desa ini.",
+      "Selamat menempuh hidup baru, Raka & Nadya! Semoga rumah tangga kalian senantiasa dilimpahi ketenangan, cinta, dan keberkahan.",
     patrolPoints: [
       { x: 4.5, z: 3.4 },
       { x: 5.5, z: 1.1 },
@@ -265,14 +306,14 @@ const VILLAGE_NPCS: DesaNpcData[] = [
   {
     id: "npc-sari",
     name: "Sari Wulandari",
-    roleLabel: "Tetangga Desa",
+    roleLabel: "Sahabat Mempelai",
     gender: "cewek",
     outfitColor: "#B85D3B",
     accentColor: "#F4E5CE",
     hairColor: "#231712",
     hatType: "floral",
     defaultWish:
-      "Senang sekali melihat kalian merayakan momen ini di Desa Asri. Jangan lupa mampir ke Pendopo dan isi buku tamu ya!",
+      "Bahagia sekali bisa hadir di hari istimewa kalian! Kedua mempelai sudah menanti di Pendopo Pelaminan, jangan lupa isi buku tamu ya.",
     patrolPoints: [
       { x: -1.1, z: 3.1 },
       { x: 0.4, z: 2.6 },
@@ -281,17 +322,17 @@ const VILLAGE_NPCS: DesaNpcData[] = [
   {
     id: "npc-dimas",
     name: "Dimas Mahendra",
-    roleLabel: "Keluarga Dekat",
+    roleLabel: "Keluarga Mempelai",
     gender: "cowok",
     outfitColor: "#486B5A",
     accentColor: "#E8C37D",
     hairColor: "#1F1612",
     hatType: "none",
     defaultWish:
-      "Doa terbaik selalu menyertai setiap langkah kalian berdua. Coba klik suasana Malam di tombol Pengaturan untuk melihat kunang-kunang!",
+      "Doa restu kami selalu mengiringi langkah Raka & Nadya. Semoga menjadi keluarga yang sakinah, mawaddah, warahmah selamanya.",
     patrolPoints: [
-      { x: 3.2, z: -3.2 },
-      { x: 4.8, z: -2.0 },
+      { x: 2.6, z: -3.2 },
+      { x: 3.4, z: -1.5 },
     ],
   },
 ];
@@ -341,19 +382,115 @@ const KADO_NPCS: DesaNpcData[] = [
     defaultWish:
       "Tip kecil: coba buka Pigura Galeri lalu ketuk tombol 'Balik kartu' di setiap foto untuk membaca catatan rahasianya.",
     patrolPoints: [
-      { x: 3.2, z: -3.2 },
-      { x: 4.8, z: -2.0 },
+      { x: 2.6, z: -3.2 },
+      { x: 3.4, z: -1.5 },
     ],
   },
 ];
 
-const SHARED_STORIES: DesaStoryChapter[] = [
+const WEDDING_STORIES: DesaStoryChapter[] = [
+  {
+    id: "story-1",
+    year: "2022 · Awal Pertemuan",
+    title: "Pertemuan Pertama yang Hangat",
+    description:
+      "Berawal dari sebuah proyek kolaborasi di Yogyakarta. Obrolan sederhana seputar arsitektur dan kopi sore perlahan tumbuh menjadi rasa nyaman yang tak terduga.",
+    image: "/themes/desa-asri/scene-1.png",
+  },
+  {
+    id: "story-2",
+    year: "2023 · Tumbuh Bersama",
+    title: "Menyusuri Langkah Demi Langkah",
+    description:
+      "Melewati musim hujan dan kemarau bersama, belajar saling memahami di balik kesibukan masing-masing, serta merayakan pencapaian kecil dengan penuh syukur.",
+    image: "/themes/desa-asri/scene-2.png",
+  },
+  {
+    id: "story-3",
+    year: "2024 · Restu Keluarga",
+    title: "Silaturahmi Dua Keluarga",
+    description:
+      "Di bawah teduh pendopo kayu, kedua keluarga duduk bersua penuh kehangatan—membuka jalan dan merestui niat baik kami untuk melangkah ke jenjang lebih serius.",
+    image: "/themes/desa-asri/scene-3.png",
+  },
+  {
+    id: "story-4",
+    year: "2025 · Khitbah & Lamaran",
+    title: "Janji yang Diikat dengan Keyakinan",
+    description:
+      "Dengan mengucap basmalah di hadapan keluarga tercinta, kami mengikat janji pertunangan sebagai awal persiapan menuju kehidupan rumah tangga.",
+    image: "/themes/desa-asri/scene-4.png",
+  },
+  {
+    id: "story-5",
+    year: "2026 · Menuju Hari Bahagia",
+    title: "Menyiapkan Lembaran Baru",
+    description:
+      "Menyusun setiap detail hari pernikahan dengan penuh cinta, memohon kelancaran dan keberkahan untuk perjalanan hidup yang akan kami arungi berdua.",
+    image: "/themes/desa-asri/scene-5.png",
+  },
+  {
+    id: "story-6",
+    year: "17 Okt 2027 · Hari Pernikahan",
+    title: "Walimatul Ursy Raka & Nadya",
+    description:
+      "Kini tibalah saat yang kami nantikan. Kehadiran serta doa restu Bapak/Ibu/Saudara/i menjadi kebahagiaan tak ternilai di hari suci kami.",
+    image: "/themes/desa-asri/scene-6.png",
+  },
+];
+
+const WEDDING_GALLERY: DesaGalleryPhoto[] = [
+  {
+    id: "gal-1",
+    title: "Fajar Terasering Pagi",
+    caption: "Sesi prewedding pagi hari di tengah kabut tipis perbukitan.",
+    backNote: "Momen di balik foto: kami tiba pukul lima pagi demi mengejar cahaya keemasan pertama sebelum akad impian kami terwujud.",
+    image: "/themes/desa-asri/scene-1.png",
+  },
+  {
+    id: "gal-2",
+    title: "Senyum di Jembatan Taman",
+    caption: "Ketenangan aliran air dan teduhnya pepohonan Nusantara.",
+    backNote: "Di balik foto ini: pengingat bahwa rumah tangga adalah tentang berjalan beriringan melewati setiap arus kehidupan.",
+    image: "/themes/desa-asri/scene-2.png",
+  },
+  {
+    id: "gal-3",
+    title: "Pelaminan Rangkaian Melati",
+    caption: "Balutan busana adat Jawa klasik berhias ronce melati segar.",
+    backNote: "Wangi melati putih selalu melambangkan ketulusan niat dan kesucian ikatan suci kami.",
+    image: "/themes/desa-asri/scene-3.png",
+  },
+  {
+    id: "gal-4",
+    title: "Janji & Cincin Pernikahan",
+    caption: "Detail undangan linen dan dua cangkir hangat penyambut pagi.",
+    backNote: "Setiap detail hari bahagia ini kami rangkai sendiri dengan harapan dapat berbagi kehangatan bersama seluruh tamu.",
+    image: "/themes/desa-asri/scene-4.png",
+  },
+  {
+    id: "gal-5",
+    title: "Lentera Senja Taman",
+    caption: "Langkah tenang menyusuri jalan setapak di bawah cahaya temaram.",
+    backNote: "Terima kasih untuk keluarga dan sahabat yang selalu menerangi jalan kami hingga hari pernikahan ini tiba.",
+    image: "/themes/desa-asri/scene-5.png",
+  },
+  {
+    id: "gal-6",
+    title: "Malam Syukuran & Doa",
+    caption: "Kehangatan cahaya lampu pendopo menyambut para tamu tercinta.",
+    backNote: "Kehadiran serta doa restu Anda adalah kado terindah bagi perjalanan baru kami.",
+    image: "/themes/desa-asri/scene-6.png",
+  },
+];
+
+const KADO_STORIES: DesaStoryChapter[] = [
   {
     id: "story-1",
     year: "2022 · Pagi di Bukit",
     title: "Pertemuan Pertama di Tepi Sawah",
     description:
-      "Berawal dari obrolan singkat sambil menunggu kabut pagi surut di kedai kopi desa. Dari cangkir pertama, percakapan sederhana terasa begitu akrab.",
+      "Berawal dari obrolan singkat sambil menunggu kabut pagi surut di kedai kopi. Dari cangkir pertama, percakapan sederhana terasa begitu akrab.",
     image: "/themes/desa-asri/scene-1.png",
   },
   {
@@ -382,7 +519,7 @@ const SHARED_STORIES: DesaStoryChapter[] = [
   },
   {
     id: "story-5",
-    year: "2026 · Senja Desa",
+    year: "2026 · Senja Hangat",
     title: "Lentera di Sepanjang Jalan Pulang",
     description:
       "Menjelang petang di antara daun pisang dan pagar bambu, lentera hangat selalu menyala menjadi penanda arah pulang.",
@@ -393,12 +530,12 @@ const SHARED_STORIES: DesaStoryChapter[] = [
     year: "Hari Ini · Bab Baru",
     title: "Malam Syukur Penuh Cahaya",
     description:
-      "Kini semua kenangan itu kami rangkai menjadi sebuah desa kecil yang bisa kamu jelajahi, lengkap dengan doa dan harapan baik untuk masa depan.",
+      "Kini semua kenangan itu kami rangkai menjadi sebuah dunia kecil yang bisa kamu jelajahi, lengkap dengan doa dan harapan baik untuk masa depan.",
     image: "/themes/desa-asri/scene-6.png",
   },
 ];
 
-const SHARED_GALLERY: DesaGalleryPhoto[] = [
+const KADO_GALLERY: DesaGalleryPhoto[] = [
   {
     id: "gal-1",
     title: "Fajar Terasering Pagi",
@@ -451,11 +588,39 @@ export function getDesaWorldPayload(mode: DesaMode): DesaWorldPayload {
       coverTag: "KADO SPESIAL",
       monogram: "R ♥ N",
       namesLine: "Untuk Nadya",
-      dateLine: "2 TAHUN PENUH CERITA · DESA ASRI",
+      dateLine: "2 TAHUN PENUH CERITA",
       shortDateLabel: "2 Tahun Bersama",
       defaultGuestName: "Nadya Aulia",
       gapuraTitle: "SAUNG KENANGAN",
       gapuraSubtitle: "Dua Tahun Penuh Cerita",
+      ui: {
+        preloaderTitle: "Memuat Saung Kenangan",
+        preloaderSubtitle: "Menyiapkan ruang kenangan interaktif...",
+        coverSubtitle:
+          "Jelajahi setiap sudut untuk membuka surat, pesan suara, kuis kenangan, dan kejutan spesial.",
+        coverCta: "Buka Kado",
+        pickerTitle: "Pilih Karakter Penjelajah",
+        pickerSubtitle: "Karakter ini akan menyusuri ruang kenangan bersamamu.",
+        pickerCta: "Mulai Jelajahi",
+        pickerAttireFemale: "Kebaya & Topi Anyam",
+        pickerAttireMale: "Busana Nusantara",
+        introEyebrow: "Kado Spesial",
+        introSubtitle: "Menyapa setiap sudut kenangan indah kita",
+        mapTitle: "Peta Lokasi",
+        mapSubtitle: "Ketuk salah satu sudut untuk langsung berkunjung.",
+        npcSectionLabel: "Sapa Sahabat",
+        progressTitle: "Jejak Momen",
+        journalTitle: "Jurnal Kenangan",
+        journalButtonLabel: "Buka Jurnal",
+        footerCaption: "Saung Kenangan",
+        wishSuccessToast: "Catatan tersimpan di buku kenangan.",
+        wishFormSentNote: "Catatanmu langsung tersimpan.",
+        wishSectionTitle: "Catatan & Ucapan",
+        galleryFooterLabel: "Album Kenangan",
+        icsDescription: "Kado Digital Saung Kenangan - Kado Digital",
+        icsFilename: "saung-kenangan.ics",
+        qrPrefix: "KADODIGITAL|SAUNG-KENANGAN",
+      },
       stations: KADO_STATIONS,
       npcs: KADO_NPCS,
       initialWishes: [
@@ -490,9 +655,9 @@ export function getDesaWorldPayload(mode: DesaMode): DesaWorldPayload {
       letter: {
         heading: "731 Hari yang Terasa Seperti Pulang ke Rumah",
         paragraphs: [
-          "Selamat merayakan dua tahun perjalanan kita, Nadya. Aku sengaja membangun desa kecil ini supaya kamu bisa berjalan santai mengunjungi setiap kenangan yang paling aku syukuri.",
+          "Selamat merayakan dua tahun perjalanan kita, Nadya. Aku sengaja merangkai ruang kecil ini supaya kamu bisa berjalan santai mengunjungi setiap kenangan yang paling aku syukuri.",
           "Dari kopi pagi sebelum berangkat kerja sampai tawa kecil sepulang kehujanan di pinggir jalan, terima kasih sudah selalu menjadi tempat pulang yang paling tenang.",
-          "Jelajahi seluruh sudut desa: mampir ke Pendopo untuk mendengar pesan suara, coba kuis singkat di Bale Kayu, lalu gosok kartu hadiah rahasia di Meja Hantaran ya.",
+          "Jelajahi seluruh sudutnya: mampir ke Pendopo untuk mendengar pesan suara, coba kuis singkat di Bale Kayu, lalu gosok kartu hadiah rahasia di Meja Hantaran ya.",
         ],
         signOff: "Dengan seluruh rasa syukur, Raka",
         quote:
@@ -501,7 +666,7 @@ export function getDesaWorldPayload(mode: DesaMode): DesaWorldPayload {
         dresscodeTitle: "Palet Hari Spesial Kita",
         dresscodeNote: "Nuansa alam yang paling sering kamu pilih saat perjalanan bersama.",
         dresscodeSwatches: [
-          { label: "Hijau Sawah", hex: "#2D6A4F" },
+          { label: "Hijau Zamrud", hex: "#2D6A4F" },
           { label: "Terracotta", hex: "#B85D3B" },
           { label: "Krem Linen", hex: "#EADBC6" },
           { label: "Kayu Jati", hex: "#6B3A24" },
@@ -512,7 +677,7 @@ export function getDesaWorldPayload(mode: DesaMode): DesaWorldPayload {
         durationSec: 38,
         senderLabel: "Rekaman suara hangat dari Raka",
         transcript:
-          "Hai Nadya, kalau kamu sudah sampai di Pendopo Desa ini berarti kamu berhasil nemuin pesanku. Terima kasih untuk dua tahun yang sabar, hangat, dan penuh kejutan kecil. Akhir pekan nanti kosongin jadwal ya, ada kejutan makan malam dan tiket liburan menunggumu di Meja Hadiah!",
+          "Hai Nadya, kalau kamu sudah sampai di Pendopo ini berarti kamu berhasil nemuin pesanku. Terima kasih untuk dua tahun yang sabar, hangat, dan penuh kejutan kecil. Akhir pekan nanti kosongin jadwal ya, ada kejutan makan malam dan tiket liburan menunggumu di Meja Hadiah!",
       },
       quiz: [
         {
@@ -529,14 +694,14 @@ export function getDesaWorldPayload(mode: DesaMode): DesaWorldPayload {
         },
         {
           id: "q-2",
-          question: "Apa yang selalu kita cari tiap pulang melewati jalan desa saat sore?",
+          question: "Apa yang selalu kita cari tiap pulang melewati jalan setapak saat sore?",
           options: [
             "Lampu toko kelontong",
             "Kunang-kunang di balik daun pisang",
             "Tukang bakso keliling",
           ],
           correctIndex: 1,
-          correctFeedback: "Benar sekali! Coba ubah Suasana Desa jadi 'Malam' di menu Pengaturan untuk melihatnya.",
+          correctFeedback: "Benar sekali! Coba ubah Suasana jadi 'Malam' di menu Pengaturan untuk melihatnya.",
           wrongFeedback: "Dekat! Kita selalu semangat mencari kunang-kunang di balik daun pisang.",
         },
         {
@@ -556,14 +721,14 @@ export function getDesaWorldPayload(mode: DesaMode): DesaWorldPayload {
         heading: "Meja Hadiah & Kejutan",
         subtitle: "Gosok kartu daun emas di bawah ini untuk membuka hadiah utama ulang tahun & anniversary kita.",
         accounts: [],
-        deliveryAddress: "Saung Tepi Sawah, Pakem, Sleman, DI Yogyakarta",
+        deliveryAddress: "Taman Kenangan, Pakem, Sleman, DI Yogyakarta",
         scratchPrompt: "Gosok perlahan lapisan daun emas ini untuk membuka hadiah utamamu",
         scratchSecretTitle: "Voucher Liburan 2 Malam: Kabin Bambu Tepi Sawah",
         scratchSecretBody:
           "Berlaku akhir pekan ini! Semua akomodasi, sarapan pinggir sungai, dan makan malam kunang-kunang sudah beres kuatur.",
       },
-      stories: SHARED_STORIES,
-      gallery: SHARED_GALLERY,
+      stories: KADO_STORIES,
+      gallery: KADO_GALLERY,
     };
   }
 
@@ -577,9 +742,47 @@ export function getDesaWorldPayload(mode: DesaMode): DesaWorldPayload {
     shortDateLabel: "17 Okt 2027",
     defaultGuestName: "Bapak/Ibu/Saudara/i",
     gapuraTitle: "RAKA & NADYA",
-    gapuraSubtitle: "17 Oktober 2027 · Desa Asri",
+    gapuraSubtitle: "Minggu, 17 Oktober 2027",
+    coupleProfile: {
+      groom: {
+        fullName: "Raka Pradipta, S.T.",
+        parents: "Putra dari Bpk. Hendra Wijaya & Ibu Ratna Dewi",
+      },
+      bride: {
+        fullName: "Nadya Aulia, S.Ars.",
+        parents: "Putri dari Bpk. Surya Pratama & Ibu Lestari",
+      },
+    },
+    ui: {
+      preloaderTitle: "Memuat Undangan",
+      preloaderSubtitle: "Menyiapkan Pendopo & ruang perayaan...",
+      coverSubtitle:
+        "Dengan penuh syukur, kami mengundang Bapak/Ibu/Saudara/i untuk merayakan momen bahagia pernikahan kami.",
+      coverCta: "Buka Undangan",
+      pickerTitle: "Pilih Karakter Tamu",
+      pickerSubtitle: "Karakter pilihan Anda akan menyusuri pelataran pendopo menuju pelaminan.",
+      pickerCta: "Masuk ke Acara",
+      pickerAttireFemale: "Kebaya Tamu",
+      pickerAttireMale: "Beskap & Topi",
+      introEyebrow: "The Wedding Of",
+      introSubtitle: "Selamat datang di perayaan pernikahan kami · Minggu, 17 Oktober 2027",
+      mapTitle: "Denah Lokasi Acara",
+      mapSubtitle: "Ketuk salah satu area untuk langsung menuju informasi acara.",
+      npcSectionLabel: "Sapa Tamu & Keluarga",
+      progressTitle: "Panduan Acara",
+      journalTitle: "Buku Undangan",
+      journalButtonLabel: "Buka Undangan",
+      footerCaption: "Walimatul Ursy",
+      wishSuccessToast: "Ucapan & konfirmasi kehadiran berhasil terkirim.",
+      wishFormSentNote: "Terima kasih, ucapan dan konfirmasi Anda telah kami catat.",
+      wishSectionTitle: "Ucapan & Doa Restu",
+      galleryFooterLabel: "Album Prewedding",
+      icsDescription: "Undangan Pernikahan Raka & Nadya - Kado Digital",
+      icsFilename: "pernikahan-raka-nadya.ics",
+      qrPrefix: "KADODIGITAL|WEDDING-RAKA-NADYA",
+    },
     stations: WEDDING_STATIONS,
-    npcs: VILLAGE_NPCS,
+    npcs: WEDDING_GUESTS,
     initialWishes: [
       {
         id: "w-1",
@@ -593,45 +796,45 @@ export function getDesaWorldPayload(mode: DesaMode): DesaWorldPayload {
       {
         id: "w-2",
         name: "Sari Wulandari",
-        relation: "Tetangga Desa",
+        relation: "Sahabat Mempelai",
         status: "Hadir",
         message:
-          "Turut berbahagia dari lubuk hati terdalam. Sampai bertemu di Pendopo Griya Asri hari Minggu nanti!",
+          "Turut berbahagia dari lubuk hati terdalam. Sampai bertemu di Pendopo Taman Srikandi hari Minggu nanti!",
         createdAt: "2 jam lalu",
       },
       {
         id: "w-3",
         name: "Dimas Mahendra",
-        relation: "Keluarga Dekat",
+        relation: "Keluarga Mempelai",
         status: "Doa Restu",
         message:
-          "Semoga menjadi keluarga yang sakinah, mawaddah, warahmah, dan selalu hangat seperti suasana desa ini.",
+          "Semoga menjadi keluarga yang sakinah, mawaddah, warahmah, serta senantiasa dilimpahi kebahagiaan bersama.",
         createdAt: "Kemarin",
       },
     ],
     letter: {
       heading: "Menghitung Hari Menuju Akad & Resepsi",
       paragraphs: [
-        "Dengan memohon rahmat dan ridho Tuhan Yang Maha Esa, kami bermaksud menyelenggarakan syukuran pernikahan kami di tengah suasana asri pedesaan.",
-        "Merupakan suatu kehormatan dan kebahagiaan apabila Bapak/Ibu/Saudara/i berkenan hadir, berjalan santai menyapa kenangan kami di desa kecil ini, serta memberikan doa restu.",
+        "Dengan memohon rahmat dan ridho Tuhan Yang Maha Esa, kami bermaksud menyelenggarakan akad nikah serta resepsi pernikahan putra-putri kami.",
+        "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kedua mempelai.",
       ],
       signOff: "Hormat kami yang berbahagia, Keluarga Besar Raka & Nadya",
       quote:
         "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan pasangan hidup untukmu agar kamu cenderung dan merasa tenteram kepadanya.",
       targetIso: "2027-10-17T09:00:00+07:00",
       dresscodeTitle: "Busana & Palet Warna",
-      dresscodeNote: "Kami menganjurkan busana bernuansa alam Nusantara yang nyaman untuk acara taman & pendopo.",
+      dresscodeNote: "Kami menganjurkan busana bernuansa Nusantara yang elegan dan nyaman untuk acara taman & pendopo.",
       dresscodeSwatches: [
-        { label: "Hijau Daun", hex: "#2D6A4F" },
+        { label: "Hijau Zamrud", hex: "#2D6A4F" },
         { label: "Terracotta", hex: "#B85D3B" },
         { label: "Krem Gading", hex: "#F4E5CE" },
         { label: "Cokelat Sogan", hex: "#6B3A24" },
       ],
     },
     eventInfo: {
-      venueName: "Pendopo Griya Asri Pakem",
-      venueAddress: "Jl. Kaliurang KM 17, Tepi Sawah Pakem, Sleman, Yogyakarta",
-      mapsUrl: "https://maps.google.com/?q=Pakem+Sleman+Yogyakarta",
+      venueName: "Pendopo Taman Srikandi",
+      venueAddress: "Jl. Kaliurang KM 14, Sleman, DI Yogyakarta",
+      mapsUrl: "https://maps.google.com/?q=Sleman+Yogyakarta",
       calendarStartIso: "20271017T020000Z",
       calendarEndIso: "20271017T070000Z",
       sessions: [
@@ -639,19 +842,19 @@ export function getDesaWorldPayload(mode: DesaMode): DesaWorldPayload {
           title: "Akad Nikah & Ijab Qobul",
           date: "Minggu, 17 Oktober 2027",
           time: "08.00 – 10.00 WIB",
-          place: "Joglo Utama Pendopo Griya Asri",
+          place: "Joglo Utama Pendopo Taman Srikandi",
         },
         {
-          title: "Resepsi Tepi Sawah · Sesi I",
+          title: "Resepsi Pernikahan · Sesi I",
           date: "Minggu, 17 Oktober 2027",
           time: "11.00 – 13.00 WIB",
-          place: "Pelataran Taman & Pendopo Asri",
+          place: "Pelataran Taman & Pendopo Pelaminan",
         },
         {
           title: "Ramah Tamah Senja · Sesi II",
           date: "Minggu, 17 Oktober 2027",
           time: "13.30 – 15.30 WIB",
-          place: "Pelataran Taman & Pendopo Asri",
+          place: "Pelataran Taman & Pendopo Pelaminan",
         },
       ],
     },
@@ -690,13 +893,13 @@ export function getDesaWorldPayload(mode: DesaMode): DesaWorldPayload {
         },
       ],
       deliveryAddress:
-        "Pendopo Griya Asri, Jl. Kaliurang KM 17, Pakem, Sleman, DI Yogyakarta 55582",
-      scratchPrompt: "Bonus untuk tamu yang mampir: gosok kartu kecil di bawah untuk pantun & pesan spesial!",
-      scratchSecretTitle: "Pantun Hangat dari Pengantin",
+        "Pendopo Taman Srikandi, Jl. Kaliurang KM 14, Sleman, DI Yogyakarta 55581",
+      scratchPrompt: "Bingkisan ucapan terima kasih: gosok kartu emas di bawah untuk membuka pesan dari kedua mempelai.",
+      scratchSecretTitle: "Terima Kasih dari Raka & Nadya",
       scratchSecretBody:
-        "Pergi ke desa memetik melati, langit sore berwarna jingga. Terima kasih sudah singgah kemari, doa terbaikmu sangat berharga!",
+        "Kehadiran dan doa restu Anda menyempurnakan hari bahagia kami. Sampai berjumpa di pelaminan!",
     },
-    stories: SHARED_STORIES,
-    gallery: SHARED_GALLERY,
+    stories: WEDDING_STORIES,
+    gallery: WEDDING_GALLERY,
   };
 }

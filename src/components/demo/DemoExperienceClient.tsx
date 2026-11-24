@@ -16,7 +16,7 @@ const DesaAsriExperience = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex min-h-[100dvh] items-center justify-center bg-[#12261C] text-sm font-semibold text-[#F8F2E6]">
-        Menyiapkan dunia desa 3D...
+        Menyiapkan pengalaman interaktif 3D...
       </div>
     ),
   },

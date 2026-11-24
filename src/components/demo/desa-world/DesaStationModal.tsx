@@ -66,12 +66,12 @@ function CountdownGrid({ targetIso }: { targetIso: string }) {
       {items.map((item) => (
         <div
           key={item.label}
-          className="rounded-[14px] border border-[#D4C2A3] bg-[#FFFBF2] px-2 py-2.5"
+          className="rounded-[14px] border border-[#D4C2A3] bg-[#FFFDF9] px-2 py-2.5"
         >
-          <p className="text-xl font-extrabold text-[#3E2B1E] tabular-nums sm:text-2xl">
+          <p className="desa-display text-2xl font-semibold text-[#3E2B1E] tabular-nums">
             {String(item.val).padStart(2, "0")}
           </p>
-          <p className="text-[10px] font-bold tracking-wider text-[#5C4633] uppercase">
+          <p className="text-[10px] font-medium tracking-wider text-[#6E5541] uppercase">
             {item.label}
           </p>
         </div>
@@ -120,7 +120,7 @@ function ScratchVoucherCard({
     }
 
     ctx.fillStyle = "#3E2B1E";
-    ctx.font = "800 15px Nunito, system-ui, sans-serif";
+    ctx.font = "600 14px 'Plus Jakarta Sans', system-ui, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText("GOSOK LAPISAN EMAS DI SINI", canvas.width / 2, canvas.height / 2 + 5);
   }, []);
@@ -147,17 +147,17 @@ function ScratchVoucherCard({
   };
 
   return (
-    <div className="rounded-[18px] border-2 border-dashed border-[#B79B74] bg-[#FFFBF2] p-4 text-center">
-      <p className="text-xs font-bold text-[#5C4633]">{prompt}</p>
+    <div className="rounded-[18px] border border-dashed border-[#C8B490] bg-[#FFFDF9] p-4 text-center">
+      <p className="text-xs font-medium text-[#5C4633]">{prompt}</p>
       <div className="relative mt-3 h-36 w-full overflow-hidden rounded-[14px] border border-[#D4C2A3] bg-[#F7F1E3]">
         <div className="flex h-full flex-col items-center justify-center px-4 text-center">
-          <p className="text-xs font-extrabold tracking-wider text-[#AD4B2C] uppercase">
-            Kejutan Terbuka
+          <p className="text-[10px] font-semibold tracking-wider text-[#AD4B2C] uppercase">
+            Pesan Terbuka
           </p>
-          <p className="mt-1 text-sm font-extrabold text-[#2A5C45]">
+          <p className="desa-display mt-1 text-base font-semibold text-[#2A5C45]">
             {secretTitle}
           </p>
-          <p className="mt-1 text-xs leading-relaxed text-[#5C4633]">
+          <p className="mt-1 text-xs font-normal leading-relaxed text-[#5C4633]">
             {secretBody}
           </p>
         </div>
@@ -189,9 +189,9 @@ function ScratchVoucherCard({
             setRevealed(true);
             onRevealed();
           }}
-          className="mt-2.5 min-h-[36px] text-xs font-bold text-[#2A5C45] underline underline-offset-4"
+          className="mt-2.5 min-h-[36px] text-xs font-semibold text-[#2A5C45] underline underline-offset-4"
         >
-          Atau ketuk di sini untuk langsung buka kejutan
+          Atau ketuk di sini untuk langsung buka pesan
         </button>
       )}
     </div>
@@ -224,7 +224,6 @@ export function DesaStationModal({
   const [formError, setFormError] = useState<string | null>(null);
   const [rsvpSent, setRsvpSent] = useState(false);
 
-  // QR Canvas ref for wedding check-in pass
   const qrCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Kado mode Quiz state
@@ -258,13 +257,13 @@ export function DesaStationModal({
     if (stationId !== "ucapan" || payload.mode !== "wedding") return;
     const canvas = qrCanvasRef.current;
     if (!canvas) return;
-    const qrPayload = `KADODIGITAL|DESA-ASRI|${displayGuest}|${wishStatus}`;
+    const qrPayload = `${payload.ui.qrPrefix}|${displayGuest}|${wishStatus}`;
     void QRCode.toCanvas(canvas, qrPayload, {
       width: 196,
       margin: 2,
       color: { dark: "#3E2B1E", light: "#FFFFFF" },
     }).catch(() => {});
-  }, [stationId, payload.mode, displayGuest, wishStatus]);
+  }, [stationId, payload.mode, payload.ui.qrPrefix, displayGuest, wishStatus]);
 
   const handleCopy = async (text: string, label: string) => {
     try {
@@ -285,7 +284,7 @@ export function DesaStationModal({
       `DTSTART:${payload.eventInfo.calendarStartIso}`,
       `DTEND:${payload.eventInfo.calendarEndIso}`,
       `LOCATION:${payload.eventInfo.venueName}, ${payload.eventInfo.venueAddress}`,
-      "DESCRIPTION:Undangan Pernikahan Desa Asri - Kado Digital",
+      `DESCRIPTION:${payload.ui.icsDescription}`,
       "END:VEVENT",
       "END:VCALENDAR",
     ].join("\r\n");
@@ -293,7 +292,7 @@ export function DesaStationModal({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "desa-asri-raka-nadya.ics";
+    link.download = payload.ui.icsFilename;
     link.click();
     URL.revokeObjectURL(url);
     onToast("Jadwal acara (.ics) disimpan ke kalender.");
@@ -314,7 +313,7 @@ export function DesaStationModal({
     });
     setWishMsg("");
     setRsvpSent(true);
-    onToast("Ucapan terkirim. Warga desa ikut membacakan doamu.");
+    onToast(payload.ui.wishSuccessToast);
   };
 
   const currentPhoto = payload.gallery[galleryIdx] ?? payload.gallery[0];
@@ -325,37 +324,37 @@ export function DesaStationModal({
       onClick={onClose}
     >
       <div
-        className="desa-woven-pill flex max-h-[88dvh] w-full max-w-[620px] flex-col overflow-hidden rounded-[24px] border-[3px] border-[#B79B74] bg-[#F7F1E3] text-[#3E2B1E] shadow-[0_28px_72px_rgba(16,22,16,0.45)]"
+        className="desa-woven-pill flex max-h-[88dvh] w-full max-w-[620px] flex-col overflow-hidden rounded-[24px] border border-[#C8B490] text-[#3E2B1E] shadow-[0_28px_72px_rgba(16,22,16,0.42)]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label={`Jurnal Desa: ${station.title}`}
+        aria-label={`${payload.ui.journalTitle}: ${station.title}`}
       >
-        {/* Sticky Journal Header + Chapter Progress */}
-        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[#DED0B6] bg-[#EFE5CE]/65 px-5 pb-3 pt-4 sm:px-6">
+        {/* Sticky Header */}
+        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[#DED0B6] bg-[#EFE5CE]/65 px-5 pb-3.5 pt-4 sm:px-6">
           <div>
-            <p className="text-[11px] font-extrabold tracking-wider text-[#2A5C45] uppercase">
-              Jurnal Desa · {station.ribbon} ({visitedStations.length}/6 selesai)
+            <p className="text-[11px] font-semibold tracking-wider text-[#2A5C45] uppercase">
+              {payload.ui.journalTitle} · {station.ribbon} ({visitedStations.length}/6)
             </p>
-            <h2 className="mt-1 font-serif text-xl font-bold text-[#3E2B1E] sm:text-2xl">
+            <h2 className="desa-display mt-1 text-xl font-semibold text-[#3E2B1E] sm:text-2xl">
               {station.title}
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Tutup jurnal desa"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border border-[#C8B28E] bg-[#FFFBF2] text-[#3E2B1E] shadow-2xs transition hover:bg-[#E7D8B6]"
+            aria-label={`Tutup ${payload.ui.journalTitle}`}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border border-[#D4C2A3] bg-[#FFFDF9] text-[#3E2B1E] shadow-2xs transition hover:bg-[#E7D8B6]"
           >
             <VillageCloseIcon className="h-4 w-4" />
           </button>
         </div>
 
-        {/* 6-Chapter Tactile Journal Tab Strip */}
+        {/* 6-Chapter Tab Strip */}
         <div
           role="tablist"
-          aria-label="Bab Jurnal Desa"
-          className="desa-no-scrollbar flex shrink-0 items-center gap-1.5 overflow-x-auto border-b border-[#DED0B6] bg-[#F7F1E3] px-4 py-2.5 sm:px-6"
+          aria-label={`Bab ${payload.ui.journalTitle}`}
+          className="desa-no-scrollbar flex shrink-0 items-center gap-1.5 overflow-x-auto border-b border-[#DED0B6] bg-[#FAF6EE] px-4 py-2.5 sm:px-6"
         >
           {payload.stations.map((st) => {
             const active = st.id === stationId;
@@ -367,17 +366,17 @@ export function DesaStationModal({
                 role="tab"
                 aria-selected={active}
                 onClick={() => onSelectStation(st.id)}
-                className={`inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-[10px] border px-3 py-1.5 text-xs font-extrabold whitespace-nowrap transition ${
+                className={`inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-[10px] border px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition ${
                   active
                     ? "border-[#2A5C45] bg-[#2A5C45] text-white"
-                    : "border-[#D4C2A3] bg-[#FFFBF2] text-[#3E2B1E] hover:bg-[#EFE5CE]"
+                    : "border-[#D4C2A3] bg-[#FFFDF9] text-[#3E2B1E] hover:bg-[#EFE5CE]"
                 }`}
               >
                 <VillageStationIcon id={st.id} className="h-3.5 w-3.5" />
                 <span>{st.dockLabel}</span>
                 {visited && !active && (
                   <Check
-                    className="h-3.5 w-3.5 text-[#2A5C45] stroke-[3]"
+                    className="h-3.5 w-3.5 text-[#2A5C45] stroke-[2.5]"
                     aria-label="Sudah dibuka"
                   />
                 )}
@@ -386,69 +385,97 @@ export function DesaStationModal({
           })}
         </div>
 
-        {/* Scrollable Body Content */}
+        {/* Scrollable Body */}
         <div className="desa-scroll min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5 text-sm sm:px-6">
-          {/* ==================== STATION 1: SURAT ==================== */}
+          {/* ==================== STATION 1: SURAT / SAMBUTAN ==================== */}
           {stationId === "surat" && (
             <>
-              <div className="rounded-[18px] border border-[#D4C2A3] bg-[#FFFBF2] p-4 sm:p-5">
-                <p className="text-xs font-extrabold tracking-wider text-[#2A5C45] uppercase">
+              <div className="rounded-[18px] border border-[#D4C2A3] bg-[#FFFDF9] p-5">
+                <p className="text-[11px] font-semibold tracking-wider text-[#2A5C45] uppercase">
                   Teruntuk {displayGuest},
                 </p>
-                <h3 className="mt-1.5 font-serif text-xl font-bold text-[#3E2B1E] sm:text-2xl">
+                <h3 className="desa-display mt-1.5 text-xl font-semibold text-[#3E2B1E] sm:text-2xl">
                   {payload.letter.heading}
                 </h3>
-                <div className="mt-3 space-y-3 text-sm leading-relaxed text-[#5C4633]">
+
+                {payload.coupleProfile && (
+                  <div className="mt-4 grid grid-cols-1 gap-3 rounded-[14px] border border-[#E5D7BC] bg-[#FAF6EE] p-4 text-center sm:grid-cols-2">
+                    <div>
+                      <p className="text-[10px] font-semibold tracking-wider text-[#6E5541] uppercase">
+                        Mempelai Pria
+                      </p>
+                      <p className="desa-display mt-0.5 text-lg font-semibold text-[#3E2B1E]">
+                        {payload.coupleProfile.groom.fullName}
+                      </p>
+                      <p className="mt-0.5 text-xs font-normal text-[#5C4633]">
+                        {payload.coupleProfile.groom.parents}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold tracking-wider text-[#6E5541] uppercase">
+                        Mempelai Wanita
+                      </p>
+                      <p className="desa-display mt-0.5 text-lg font-semibold text-[#3E2B1E]">
+                        {payload.coupleProfile.bride.fullName}
+                      </p>
+                      <p className="mt-0.5 text-xs font-normal text-[#5C4633]">
+                        {payload.coupleProfile.bride.parents}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-4 space-y-3 text-sm font-normal leading-relaxed text-[#5C4633]">
                   {payload.letter.paragraphs.map((p) => (
                     <p key={p}>{p}</p>
                   ))}
                 </div>
-                <p className="mt-4 font-serif text-sm font-bold italic text-[#AD4B2C]">
+                <p className="desa-display mt-4 text-sm font-medium italic text-[#AD4B2C]">
                   {payload.letter.signOff}
                 </p>
               </div>
 
               {payload.mode === "wedding" && payload.letter.targetIso && (
-                <div className="space-y-3 rounded-[18px] border-2 border-dashed border-[#C8B28E] bg-[#FFFBF2] p-4 text-center">
+                <div className="space-y-3 rounded-[18px] border border-dashed border-[#C8B490] bg-[#FFFDF9] p-4 text-center">
                   <CountdownGrid targetIso={payload.letter.targetIso} />
                   <button
                     type="button"
                     onClick={handleDownloadIcs}
-                    className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-[12px] border-b-[3px] border-[#7D321B] bg-[#AD4B2C] px-5 py-2 text-xs font-extrabold text-white transition hover:bg-[#993E22]"
+                    className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-[12px] bg-[#AD4B2C] px-5 py-2 text-xs font-semibold text-white transition hover:bg-[#963C20]"
                   >
                     <CalendarPlus className="h-4 w-4" aria-hidden="true" />
-                    Tambahkan ke Kalender
+                    Simpan ke Kalender
                   </button>
                 </div>
               )}
 
               {payload.mode === "kado" && payload.letter.daysTogether && (
-                <div className="rounded-[18px] border border-[#2A5C45] bg-[#2A5C45] p-4 text-center text-[#F7F1E3]">
-                  <p className="text-[11px] font-bold tracking-widest text-[#CFE3D6] uppercase">
+                <div className="rounded-[18px] border border-[#2A5C45] bg-[#2A5C45] p-4 text-center text-[#FAF6EE]">
+                  <p className="text-[11px] font-medium tracking-widest text-[#CFE3D6] uppercase">
                     Kebersamaan Kita Sejauh Ini
                   </p>
-                  <p className="mt-1 text-3xl font-extrabold tabular-nums">
+                  <p className="desa-display mt-1 text-3xl font-semibold tabular-nums">
                     {payload.letter.daysTogether} Hari
                   </p>
                 </div>
               )}
 
               {payload.letter.dresscodeSwatches && (
-                <div className="rounded-[18px] border-2 border-dashed border-[#C8B28E] bg-[#FFFBF2] p-4 text-center">
-                  <h4 className="text-base font-extrabold text-[#3E2B1E]">
+                <div className="rounded-[18px] border border-dashed border-[#C8B490] bg-[#FFFDF9] p-4 text-center">
+                  <h4 className="desa-display text-base font-semibold text-[#3E2B1E]">
                     {payload.letter.dresscodeTitle}
                   </h4>
-                  <p className="mt-1 text-xs text-[#5C4633]">
+                  <p className="mt-1 text-xs font-normal text-[#5C4633]">
                     {payload.letter.dresscodeNote}
                   </p>
                   <div className="mt-3 flex flex-wrap justify-center gap-3.5">
                     {payload.letter.dresscodeSwatches.map((sw) => (
                       <div key={sw.label} className="flex flex-col items-center gap-1">
                         <span
-                          className="h-9 w-9 rounded-full border-2 border-[#B79B74]"
+                          className="h-9 w-9 rounded-full border border-[#C8B490]"
                           style={{ backgroundColor: sw.hex }}
                         />
-                        <span className="text-[11px] font-bold text-[#5C4633]">
+                        <span className="text-[11px] font-medium text-[#5C4633]">
                           {sw.label}
                         </span>
                       </div>
@@ -457,7 +484,7 @@ export function DesaStationModal({
                 </div>
               )}
 
-              <blockquote className="rounded-[18px] border border-[#D4C2A3] bg-[#EFE5CE] p-4 text-center font-serif text-sm italic leading-relaxed text-[#3E2B1E]">
+              <blockquote className="desa-display rounded-[18px] border border-[#D4C2A3] bg-[#EFE5CE] p-4 text-center text-sm italic leading-relaxed text-[#3E2B1E]">
                 “{payload.letter.quote}”
               </blockquote>
             </>
@@ -470,37 +497,37 @@ export function DesaStationModal({
                 {payload.eventInfo.sessions.map((sess) => (
                   <div
                     key={sess.title}
-                    className="rounded-[18px] border border-[#D4C2A3] bg-[#FFFBF2] p-4"
+                    className="rounded-[18px] border border-[#D4C2A3] bg-[#FFFDF9] p-4"
                   >
-                    <span className="inline-block rounded-md bg-[#E3EFE8] px-2.5 py-0.5 text-[11px] font-extrabold text-[#2A5C45]">
+                    <span className="inline-block rounded-md bg-[#E3EFE8] px-2.5 py-0.5 text-[11px] font-semibold text-[#2A5C45]">
                       {sess.time}
                     </span>
-                    <h3 className="mt-2 text-base font-extrabold text-[#3E2B1E]">
+                    <h3 className="desa-display mt-2 text-lg font-semibold text-[#3E2B1E]">
                       {sess.title}
                     </h3>
-                    <p className="mt-0.5 text-xs font-bold text-[#AD4B2C]">
+                    <p className="mt-0.5 text-xs font-semibold text-[#AD4B2C]">
                       {sess.date}
                     </p>
-                    <p className="mt-1 text-xs text-[#5C4633]">{sess.place}</p>
+                    <p className="mt-1 text-xs font-normal text-[#5C4633]">{sess.place}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="rounded-[18px] border-2 border-dashed border-[#C8B28E] bg-[#FFFBF2] p-4 text-center">
-                <p className="text-sm font-extrabold text-[#3E2B1E]">
+              <div className="rounded-[18px] border border-dashed border-[#C8B490] bg-[#FFFDF9] p-4 text-center">
+                <p className="desa-display text-base font-semibold text-[#3E2B1E]">
                   {payload.eventInfo.venueName}
                 </p>
-                <p className="mt-1 text-xs text-[#5C4633]">
+                <p className="mt-1 text-xs font-normal text-[#5C4633]">
                   {payload.eventInfo.venueAddress}
                 </p>
                 <a
                   href={payload.eventInfo.mapsUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-3 inline-flex min-h-[42px] items-center gap-1.5 rounded-[12px] bg-[#2A5C45] px-5 py-2 text-xs font-extrabold text-white transition hover:bg-[#1E4534]"
+                  className="mt-3 inline-flex min-h-[42px] items-center gap-1.5 rounded-[12px] bg-[#2A5C45] px-5 py-2 text-xs font-semibold text-white transition hover:bg-[#1E4534]"
                 >
                   <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-                  Arahkan ke Lokasi
+                  Buka di Google Maps
                 </a>
               </div>
             </>
@@ -508,7 +535,7 @@ export function DesaStationModal({
 
           {stationId === "acara" && payload.mode === "kado" && payload.voiceNote && (
             <div className="space-y-4">
-              <div className="rounded-[18px] border border-[#D4C2A3] bg-[#FFFBF2] p-5">
+              <div className="rounded-[18px] border border-[#D4C2A3] bg-[#FFFDF9] p-5">
                 <div className="flex items-center gap-3.5">
                   <button
                     type="button"
@@ -529,7 +556,7 @@ export function DesaStationModal({
                         );
                       }
                     }}
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#AD4B2C] text-white shadow-sm transition hover:bg-[#993E22]"
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#AD4B2C] text-white shadow-sm transition hover:bg-[#963C20]"
                     aria-label={voicePlaying ? "Jeda pesan suara" : "Putar pesan suara"}
                   >
                     {voicePlaying ? (
@@ -539,10 +566,10 @@ export function DesaStationModal({
                     )}
                   </button>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-[#2A5C45]">
+                    <p className="text-xs font-semibold text-[#2A5C45]">
                       {payload.voiceNote.senderLabel}
                     </p>
-                    <p className="truncate text-sm font-extrabold text-[#3E2B1E]">
+                    <p className="truncate text-sm font-semibold text-[#3E2B1E]">
                       {payload.voiceNote.title}
                     </p>
                     <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[#E1D4BC]">
@@ -558,7 +585,7 @@ export function DesaStationModal({
                     </div>
                   </div>
                 </div>
-                <div className="mt-3 flex items-center justify-between text-[11px] font-bold text-[#5C4633] tabular-nums">
+                <div className="mt-3 flex items-center justify-between text-[11px] font-medium text-[#5C4633] tabular-nums">
                   <span className="inline-flex items-center gap-1">
                     <Mic className="h-3.5 w-3.5 text-[#AD4B2C]" aria-hidden="true" />
                     {voicePlaying ? "Sedang diputar..." : "Ketuk putar untuk dengar"}
@@ -570,11 +597,11 @@ export function DesaStationModal({
                 </div>
               </div>
 
-              <div className="rounded-[18px] border border-[#D4C2A3] bg-[#FFFBF2] p-4">
-                <p className="text-[11px] font-extrabold tracking-wider text-[#5C4633] uppercase">
+              <div className="rounded-[18px] border border-[#D4C2A3] bg-[#FFFDF9] p-4">
+                <p className="text-[11px] font-semibold tracking-wider text-[#5C4633] uppercase">
                   Transkrip Pesan
                 </p>
-                <p className="mt-2 font-serif text-base italic leading-relaxed text-[#3E2B1E]">
+                <p className="desa-display mt-2 text-base italic leading-relaxed text-[#3E2B1E]">
                   “{payload.voiceNote.transcript}”
                 </p>
               </div>
@@ -587,16 +614,16 @@ export function DesaStationModal({
               <form
                 onSubmit={handleWishSubmit}
                 noValidate
-                className="space-y-3 rounded-[18px] border border-[#D4C2A3] bg-[#FFFBF2] p-4"
+                className="space-y-3 rounded-[18px] border border-[#D4C2A3] bg-[#FFFDF9] p-4"
               >
-                <h3 className="text-sm font-extrabold text-[#3E2B1E]">
+                <h3 className="desa-display text-base font-semibold text-[#3E2B1E]">
                   Kirim Ucapan, Doa &amp; Konfirmasi Hadir
                 </h3>
 
                 <div>
                   <label
                     htmlFor="wish-name"
-                    className="mb-1 block text-xs font-extrabold text-[#3E2B1E]"
+                    className="mb-1 block text-xs font-semibold text-[#3E2B1E]"
                   >
                     Nama lengkap
                   </label>
@@ -606,7 +633,7 @@ export function DesaStationModal({
                     value={wishName}
                     onChange={(e) => setWishName(e.target.value)}
                     placeholder="Nama Anda"
-                    className="min-h-[42px] w-full rounded-[12px] border border-[#C8B28E] bg-[#F7F1E3]/60 px-3.5 py-2 text-xs font-semibold text-[#3E2B1E] focus:border-[#2A5C45] focus:outline-none"
+                    className="min-h-[42px] w-full rounded-[12px] border border-[#C8B28E] bg-[#FAF6EE] px-3.5 py-2 text-xs font-normal text-[#3E2B1E] focus:border-[#2A5C45] focus:outline-none"
                   />
                 </div>
 
@@ -614,7 +641,7 @@ export function DesaStationModal({
                   <div>
                     <label
                       htmlFor="wish-relation"
-                      className="mb-1 block text-xs font-extrabold text-[#3E2B1E]"
+                      className="mb-1 block text-xs font-semibold text-[#3E2B1E]"
                     >
                       Kenalan / Hubungan
                     </label>
@@ -624,13 +651,13 @@ export function DesaStationModal({
                       value={wishRelation}
                       onChange={(e) => setWishRelation(e.target.value)}
                       placeholder="Sahabat, Rekan Kerja, Keluarga"
-                      className="min-h-[42px] w-full rounded-[12px] border border-[#C8B28E] bg-[#F7F1E3]/60 px-3 py-2 text-xs font-semibold text-[#3E2B1E] focus:border-[#2A5C45] focus:outline-none"
+                      className="min-h-[42px] w-full rounded-[12px] border border-[#C8B28E] bg-[#FAF6EE] px-3 py-2 text-xs font-normal text-[#3E2B1E] focus:border-[#2A5C45] focus:outline-none"
                     />
                   </div>
                   <div>
                     <label
                       htmlFor="wish-status"
-                      className="mb-1 block text-xs font-extrabold text-[#3E2B1E]"
+                      className="mb-1 block text-xs font-semibold text-[#3E2B1E]"
                     >
                       Konfirmasi Kehadiran
                     </label>
@@ -640,7 +667,7 @@ export function DesaStationModal({
                       onChange={(e) =>
                         setWishStatus(e.target.value as DesaWishItem["status"])
                       }
-                      className="min-h-[42px] w-full rounded-[12px] border border-[#C8B28E] bg-[#F7F1E3]/60 px-3 py-2 text-xs font-bold text-[#3E2B1E] focus:border-[#2A5C45] focus:outline-none"
+                      className="min-h-[42px] w-full rounded-[12px] border border-[#C8B28E] bg-[#FAF6EE] px-3 py-2 text-xs font-semibold text-[#3E2B1E] focus:border-[#2A5C45] focus:outline-none"
                     >
                       <option value="Hadir">Hadir</option>
                       <option value="Doa Restu">Kirim Doa</option>
@@ -651,7 +678,7 @@ export function DesaStationModal({
                 <div>
                   <label
                     htmlFor="wish-message"
-                    className="mb-1 block text-xs font-extrabold text-[#3E2B1E]"
+                    className="mb-1 block text-xs font-semibold text-[#3E2B1E]"
                   >
                     Pesan &amp; Doa
                   </label>
@@ -661,14 +688,14 @@ export function DesaStationModal({
                     value={wishMsg}
                     onChange={(e) => setWishMsg(e.target.value)}
                     placeholder="Tulis pesan Anda di sini..."
-                    className="w-full rounded-[12px] border border-[#C8B28E] bg-[#F7F1E3]/60 px-3.5 py-2 text-xs font-semibold text-[#3E2B1E] focus:border-[#2A5C45] focus:outline-none"
+                    className="w-full rounded-[12px] border border-[#C8B28E] bg-[#FAF6EE] px-3.5 py-2 text-xs font-normal text-[#3E2B1E] focus:border-[#2A5C45] focus:outline-none"
                   />
                 </div>
 
                 {formError && (
                   <p
                     role="alert"
-                    className="rounded-lg border border-[#AD4B2C]/40 bg-[#FBEAE4] px-3 py-2 text-xs font-bold text-[#8E3217]"
+                    className="rounded-lg border border-[#AD4B2C]/40 bg-[#FBEAE4] px-3 py-2 text-xs font-medium text-[#8E3217]"
                   >
                     {formError}
                   </p>
@@ -676,22 +703,22 @@ export function DesaStationModal({
 
                 <button
                   type="submit"
-                  className="inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-[12px] border-b-[3px] border-[#7D321B] bg-[#AD4B2C] py-2.5 text-xs font-extrabold text-white transition hover:bg-[#993E22]"
+                  className="inline-flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-[12px] bg-[#AD4B2C] py-2.5 text-xs font-semibold text-white transition hover:bg-[#963C20]"
                 >
                   <Send className="h-3.5 w-3.5" aria-hidden="true" />
                   Kirimkan Ucapan &amp; RSVP
                 </button>
 
                 {rsvpSent && (
-                  <p className="text-center text-xs font-extrabold text-[#2A5C45]">
-                    Ucapan tercatat dan langsung dibacakan warga desa.
+                  <p className="text-center text-xs font-medium text-[#2A5C45]">
+                    {payload.ui.wishFormSentNote}
                   </p>
                 )}
               </form>
 
               {/* Real QR Check-in Card */}
-              <div className="flex flex-col items-center rounded-[18px] border-2 border-dashed border-[#C8B28E] bg-[#FFFBF2] p-4 text-center">
-                <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#2A5C45]">
+              <div className="flex flex-col items-center rounded-[18px] border border-dashed border-[#C8B490] bg-[#FFFDF9] p-4 text-center">
+                <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2A5C45]">
                   <QrCode className="h-4 w-4" aria-hidden="true" />
                   <span>Kartu Check-In Hari-H ({wishStatus})</span>
                 </div>
@@ -699,42 +726,42 @@ export function DesaStationModal({
                   ref={qrCanvasRef}
                   className="mt-2.5 rounded-[12px] border border-[#D4C2A3] bg-white p-1"
                 />
-                <p className="mt-2 text-xs font-bold text-[#3E2B1E]">
+                <p className="mt-2 text-xs font-semibold text-[#3E2B1E]">
                   Tamu: {wishName.trim() || displayGuest}
                 </p>
               </div>
 
               {/* Wish Wall */}
               <div className="space-y-2.5">
-                <p className="text-xs font-extrabold tracking-wider text-[#5C4633] uppercase">
-                  Ucapan Warga &amp; Tamu ({wishes.length})
+                <p className="text-xs font-semibold tracking-wider text-[#5C4633] uppercase">
+                  {payload.ui.wishSectionTitle} ({wishes.length})
                 </p>
                 {wishes.length === 0 ? (
-                  <p className="rounded-[14px] border border-[#D4C2A3] bg-[#FFFBF2] p-4 text-center text-xs font-semibold text-[#5C4633]">
+                  <p className="rounded-[14px] border border-[#D4C2A3] bg-[#FFFDF9] p-4 text-center text-xs font-normal text-[#5C4633]">
                     Belum ada ucapan tamu. Jadilah yang pertama mengirim doa restu lewat formulir di atas.
                   </p>
                 ) : (
                   wishes.map((w) => (
                     <div
                       key={w.id}
-                      className="rounded-[14px] border border-[#D4C2A3] bg-[#FFFBF2] px-4 py-3"
+                      className="rounded-[14px] border border-[#D4C2A3] bg-[#FFFDF9] px-4 py-3"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="min-w-0">
-                          <span className="text-xs font-extrabold text-[#3E2B1E]">
+                          <span className="text-xs font-semibold text-[#3E2B1E]">
                             {w.name}
                           </span>
                           {w.relation && (
-                            <span className="ml-1.5 text-[11px] font-semibold text-[#5C4633]">
+                            <span className="ml-1.5 text-[11px] font-normal text-[#6E5541]">
                               · {w.relation}
                             </span>
                           )}
                         </div>
-                        <span className="shrink-0 rounded-md bg-[#E3EFE8] px-2 py-0.5 text-[10px] font-extrabold text-[#2A5C45]">
+                        <span className="shrink-0 rounded-md bg-[#E3EFE8] px-2 py-0.5 text-[10px] font-semibold text-[#2A5C45]">
                           {w.status}
                         </span>
                       </div>
-                      <p className="mt-1 text-xs leading-relaxed text-[#5C4633]">
+                      <p className="mt-1 text-xs font-normal leading-relaxed text-[#5C4633]">
                         {w.message}
                       </p>
                     </div>
@@ -747,14 +774,14 @@ export function DesaStationModal({
           {stationId === "ucapan" && payload.mode === "kado" && payload.quiz && (
             <div className="space-y-4">
               {quizIdx < payload.quiz.length ? (
-                <div className="rounded-[18px] border border-[#D4C2A3] bg-[#FFFBF2] p-5">
-                  <div className="flex items-center justify-between text-xs font-extrabold text-[#5C4633]">
+                <div className="rounded-[18px] border border-[#D4C2A3] bg-[#FFFDF9] p-5">
+                  <div className="flex items-center justify-between text-xs font-semibold text-[#5C4633]">
                     <span>
                       Pertanyaan {quizIdx + 1} / {payload.quiz.length}
                     </span>
                     <span className="text-[#2A5C45]">Skor: {quizScore}</span>
                   </div>
-                  <h3 className="mt-2 text-base font-extrabold text-[#3E2B1E]">
+                  <h3 className="desa-display mt-2 text-lg font-semibold text-[#3E2B1E]">
                     {payload.quiz[quizIdx].question}
                   </h3>
                   <div className="mt-4 space-y-2">
@@ -777,12 +804,12 @@ export function DesaStationModal({
                               audioEngine?.playTap();
                             }
                           }}
-                          className={`flex min-h-[44px] w-full items-center justify-between rounded-[12px] border-2 px-4 py-2.5 text-left text-xs font-bold transition ${
+                          className={`flex min-h-[44px] w-full items-center justify-between rounded-[12px] border px-4 py-2.5 text-left text-xs font-semibold transition ${
                             isCorrect
                               ? "border-[#2A5C45] bg-[#E3EFE8] text-[#1D4432]"
                               : chosen
                                 ? "border-[#AD4B2C] bg-[#FBEAE4] text-[#8E3217]"
-                                : "border-[#D4C2A3] bg-[#F7F1E3]/60 text-[#3E2B1E] hover:border-[#8C6D46]"
+                                : "border-[#D4C2A3] bg-[#FAF6EE] text-[#3E2B1E] hover:border-[#8C6D46]"
                           }`}
                         >
                           <span>{opt}</span>
@@ -793,7 +820,7 @@ export function DesaStationModal({
                   </div>
 
                   {quizChoice !== null && (
-                    <div className="mt-4 space-y-3 rounded-[14px] bg-[#EFE5CE] p-3.5 text-xs font-bold text-[#3E2B1E]">
+                    <div className="mt-4 space-y-3 rounded-[14px] bg-[#EFE5CE] p-3.5 text-xs font-medium text-[#3E2B1E]">
                       <p>
                         {quizChoice === payload.quiz[quizIdx].correctIndex
                           ? payload.quiz[quizIdx].correctFeedback
@@ -805,7 +832,7 @@ export function DesaStationModal({
                           setQuizChoice(null);
                           setQuizIdx((i) => i + 1);
                         }}
-                        className="min-h-[40px] rounded-[10px] bg-[#2A5C45] px-4 py-1.5 text-xs font-extrabold text-white hover:bg-[#1F4634]"
+                        className="min-h-[40px] rounded-[10px] bg-[#2A5C45] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#1F4634]"
                       >
                         {quizIdx + 1 < payload.quiz.length
                           ? "Lanjut Pertanyaan Berikutnya"
@@ -815,14 +842,14 @@ export function DesaStationModal({
                   )}
                 </div>
               ) : (
-                <div className="rounded-[18px] border border-[#C8B28E] bg-[#FFFBF2] p-6 text-center">
-                  <p className="text-xs font-extrabold tracking-wider text-[#AD4B2C] uppercase">
+                <div className="rounded-[18px] border border-[#C8B28E] bg-[#FFFDF9] p-6 text-center">
+                  <p className="text-xs font-semibold tracking-wider text-[#AD4B2C] uppercase">
                     Ringkasan Kuis
                   </p>
-                  <h3 className="mt-1.5 text-lg font-extrabold text-[#3E2B1E]">
+                  <h3 className="desa-display mt-1.5 text-xl font-semibold text-[#3E2B1E]">
                     Skor Kamu {quizScore} / {payload.quiz.length}
                   </h3>
-                  <p className="mt-1.5 text-xs text-[#5C4633]">
+                  <p className="mt-1.5 text-xs font-normal text-[#5C4633]">
                     Sekarang buka tab <strong>Kado Rahasia</strong> untuk menggosok hadiah utamamu.
                   </p>
                   <button
@@ -832,7 +859,7 @@ export function DesaStationModal({
                       setQuizChoice(null);
                       setQuizScore(0);
                     }}
-                    className="mt-4 inline-flex min-h-[40px] items-center gap-1.5 rounded-[10px] border border-[#C8B28E] px-4 py-1.5 text-xs font-bold text-[#3E2B1E] hover:bg-[#EFE5CE]"
+                    className="mt-4 inline-flex min-h-[40px] items-center gap-1.5 rounded-[10px] border border-[#C8B28E] px-4 py-1.5 text-xs font-semibold text-[#3E2B1E] hover:bg-[#EFE5CE]"
                   >
                     <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
                     Mainkan Lagi
@@ -845,7 +872,7 @@ export function DesaStationModal({
           {/* ==================== STATION 4: KADO ==================== */}
           {stationId === "kado" && (
             <>
-              <p className="text-xs leading-relaxed text-[#5C4633]">
+              <p className="text-xs font-normal leading-relaxed text-[#5C4633]">
                 {payload.gift.subtitle}
               </p>
 
@@ -854,26 +881,26 @@ export function DesaStationModal({
                   {payload.gift.accounts.map((acc) => (
                     <div
                       key={acc.id}
-                      className="flex flex-col justify-between rounded-[16px] border border-[#D4C2A3] bg-[#FFFBF2] p-3.5"
+                      className="flex flex-col justify-between rounded-[16px] border border-[#D4C2A3] bg-[#FFFDF9] p-3.5"
                     >
                       <div>
                         <span
-                          className="inline-block rounded-md px-2.5 py-0.5 text-[10px] font-extrabold text-white"
+                          className="inline-block rounded-md px-2.5 py-0.5 text-[10px] font-semibold text-white"
                           style={{ backgroundColor: acc.color }}
                         >
                           {acc.bank}
                         </span>
-                        <p className="mt-2 text-sm font-extrabold text-[#3E2B1E] tabular-nums">
+                        <p className="mt-2 text-sm font-semibold text-[#3E2B1E] tabular-nums">
                           {acc.number}
                         </p>
-                        <p className="text-[11px] font-semibold text-[#5C4633]">
+                        <p className="text-[11px] font-normal text-[#5C4633]">
                           a.n. {acc.owner}
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleCopy(acc.number, `Nomor ${acc.bank}`)}
-                        className="mt-3 inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-[10px] border border-[#C8B28E] bg-[#F7F1E3] py-1.5 text-[11px] font-extrabold text-[#3E2B1E] hover:bg-[#EFE5CE]"
+                        className="mt-3 inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-[10px] border border-[#C8B28E] bg-[#FAF6EE] py-1.5 text-[11px] font-semibold text-[#3E2B1E] hover:bg-[#EFE5CE]"
                       >
                         <Copy className="h-3 w-3" aria-hidden="true" />
                         Salin Nomor
@@ -889,15 +916,15 @@ export function DesaStationModal({
                 secretBody={payload.gift.scratchSecretBody}
                 onRevealed={() => {
                   audioEngine?.playReveal();
-                  onToast("Kejutan berhasil dibuka.");
+                  onToast("Pesan kejutan berhasil dibuka.");
                 }}
               />
 
-              <div className="rounded-[18px] border border-[#D4C2A3] bg-[#FFFBF2] p-4">
-                <p className="text-xs font-extrabold text-[#3E2B1E]">
-                  Alamat Pengiriman Hadiah Fisik
+              <div className="rounded-[18px] border border-[#D4C2A3] bg-[#FFFDF9] p-4">
+                <p className="text-xs font-semibold text-[#3E2B1E]">
+                  Alamat Pengiriman Kado
                 </p>
-                <p className="mt-1 text-xs leading-relaxed text-[#5C4633]">
+                <p className="mt-1 text-xs font-normal leading-relaxed text-[#5C4633]">
                   {payload.gift.deliveryAddress}
                 </p>
                 <button
@@ -905,7 +932,7 @@ export function DesaStationModal({
                   onClick={() =>
                     handleCopy(payload.gift.deliveryAddress, "Alamat pengiriman")
                   }
-                  className="mt-2.5 inline-flex min-h-[38px] items-center gap-1.5 rounded-[10px] bg-[#2A5C45] px-3.5 py-1.5 text-[11px] font-extrabold text-white hover:bg-[#1F4634]"
+                  className="mt-2.5 inline-flex min-h-[38px] items-center gap-1.5 rounded-[10px] bg-[#2A5C45] px-3.5 py-1.5 text-[11px] font-semibold text-white hover:bg-[#1F4634]"
                 >
                   <Copy className="h-3 w-3" aria-hidden="true" />
                   Salin Alamat
@@ -920,7 +947,7 @@ export function DesaStationModal({
               {payload.stories.map((ch) => (
                 <article
                   key={ch.id}
-                  className="overflow-hidden rounded-[18px] border border-[#D4C2A3] bg-[#FFFBF2]"
+                  className="overflow-hidden rounded-[18px] border border-[#D4C2A3] bg-[#FFFDF9]"
                 >
                   <div className="aspect-[16/10] w-full overflow-hidden bg-[#EFE5CE]">
                     <img
@@ -932,13 +959,13 @@ export function DesaStationModal({
                     />
                   </div>
                   <div className="p-4">
-                    <span className="inline-block rounded-md bg-[#E3EFE8] px-2.5 py-0.5 text-[11px] font-extrabold text-[#2A5C45]">
+                    <span className="inline-block rounded-md bg-[#E3EFE8] px-2.5 py-0.5 text-[11px] font-semibold text-[#2A5C45]">
                       {ch.year}
                     </span>
-                    <h3 className="mt-2 font-serif text-lg font-bold text-[#3E2B1E]">
+                    <h3 className="desa-display mt-2 text-lg font-semibold text-[#3E2B1E]">
                       {ch.title}
                     </h3>
-                    <p className="mt-1 text-xs leading-relaxed text-[#5C4633]">
+                    <p className="mt-1 text-xs font-normal leading-relaxed text-[#5C4633]">
                       {ch.description}
                     </p>
                   </div>
@@ -950,7 +977,7 @@ export function DesaStationModal({
           {/* ==================== STATION 6: GALERI ==================== */}
           {stationId === "galeri" && currentPhoto && (
             <div className="space-y-3.5">
-              <div className="overflow-hidden rounded-[18px] border-2 border-[#C8B28E] bg-[#FFFBF2]">
+              <div className="overflow-hidden rounded-[18px] border border-[#C8B490] bg-[#FFFDF9]">
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#EFE5CE]">
                   {!cardFlipped ? (
                     <img
@@ -961,14 +988,14 @@ export function DesaStationModal({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full flex-col items-center justify-center bg-[#F7F1E3] p-6 text-center">
-                      <span className="text-[11px] font-extrabold tracking-wider text-[#AD4B2C] uppercase">
+                    <div className="flex h-full flex-col items-center justify-center bg-[#FAF6EE] p-6 text-center">
+                      <span className="text-[11px] font-semibold tracking-wider text-[#AD4B2C] uppercase">
                         Catatan di Balik Foto
                       </span>
-                      <h4 className="mt-2 font-serif text-lg font-bold text-[#3E2B1E]">
+                      <h4 className="desa-display mt-2 text-lg font-semibold text-[#3E2B1E]">
                         {currentPhoto.title}
                       </h4>
-                      <p className="mt-2 text-sm leading-relaxed text-[#5C4633]">
+                      <p className="mt-2 text-sm font-normal leading-relaxed text-[#5C4633]">
                         {currentPhoto.backNote}
                       </p>
                     </div>
@@ -1002,25 +1029,25 @@ export function DesaStationModal({
 
                 <div className="flex items-center justify-between gap-2 p-3.5">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-extrabold text-[#3E2B1E]">
+                    <p className="truncate text-sm font-semibold text-[#3E2B1E]">
                       {currentPhoto.title}
                     </p>
-                    <p className="truncate text-xs text-[#5C4633]">
+                    <p className="truncate text-xs font-normal text-[#5C4633]">
                       {currentPhoto.caption}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setCardFlipped((f) => !f)}
-                    className="min-h-[38px] shrink-0 rounded-[10px] border-2 border-[#2A5C45] px-3 py-1 text-xs font-extrabold text-[#2A5C45] transition hover:bg-[#2A5C45] hover:text-white"
+                    className="min-h-[38px] shrink-0 rounded-[10px] border border-[#2A5C45] px-3 py-1 text-xs font-semibold text-[#2A5C45] transition hover:bg-[#2A5C45] hover:text-white"
                   >
                     {cardFlipped ? "Lihat Foto" : "Balik Kartu"}
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-xs font-bold text-[#5C4633]">
-                <span>Album Momen Desa</span>
+              <div className="flex items-center justify-between text-xs font-medium text-[#5C4633]">
+                <span>{payload.ui.galleryFooterLabel}</span>
                 <span className="tabular-nums">
                   {galleryIdx + 1} / {payload.gallery.length}
                 </span>
@@ -1055,14 +1082,16 @@ export function DesaStationModal({
           )}
         </div>
 
-        {/* Sticky Non-Overlapping Journal Footer */}
-        <div className="flex shrink-0 items-center justify-between gap-2 border-t border-[#DED0B6] bg-[#EFE5CE] px-5 py-2.5 text-[11px] font-bold text-[#5C4633] sm:px-6">
-          <span>{payload.namesLine} · Desa Asri</span>
+        {/* Sticky Footer */}
+        <div className="flex shrink-0 items-center justify-between gap-2 border-t border-[#DED0B6] bg-[#EFE5CE] px-5 py-2.5 text-[11px] font-medium text-[#5C4633] sm:px-6">
+          <span>
+            {payload.namesLine} · {payload.ui.footerCaption}
+          </span>
           <span>
             Dirangkai dengan{" "}
             <a
               href="/"
-              className="text-[#2A5C45] underline underline-offset-2 hover:text-[#1D4432]"
+              className="font-semibold text-[#2A5C45] underline underline-offset-2 hover:text-[#1D4432]"
             >
               Kado Digital
             </a>

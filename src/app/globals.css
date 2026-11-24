@@ -130,9 +130,13 @@ body {
   transform: rotateY(180deg);
 }
 
-/* Scoped styling strictly for 3D Cozy Indonesian Village products (Opsi 1: Anyaman & Jurnal Desa) */
+/* Scoped styling strictly for 3D Interactive Invitation & Gift products */
 [data-desa-world] {
-  font-family: var(--font-cozy);
+  font-family: var(--font-sans);
+}
+
+[data-desa-world] .desa-display {
+  font-family: var(--font-editorial-alt), "Playfair Display", Georgia, serif;
 }
 
 [data-desa-world] a[href],
@@ -147,37 +151,32 @@ body {
 }
 
 [data-desa-world] .desa-woven-pill {
-  background-color: #f7f1e3;
-  background-image:
-    repeating-linear-gradient(
-      90deg,
-      rgba(183, 155, 116, 0.14) 0px,
-      rgba(183, 155, 116, 0.14) 4px,
-      transparent 4px,
-      transparent 9px
-    );
+  background-color: rgba(250, 246, 238, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   box-shadow:
-    inset 0 0 0 2px rgba(255, 252, 245, 0.72),
-    0 8px 22px -6px rgba(42, 28, 16, 0.28);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+    0 16px 40px -12px rgba(28, 22, 16, 0.24);
 }
 
 [data-desa-world] .desa-icon-tile {
-  background-color: #f7f1e3;
-  border: 2px solid #b79b74;
-  box-shadow:
-    0 3px 0 #8c6d46,
-    0 8px 18px -6px rgba(32, 22, 12, 0.28);
-  transition: transform 140ms ease, background-color 140ms ease;
+  background-color: rgba(250, 246, 238, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid #c8b490;
+  box-shadow: 0 6px 18px -6px rgba(28, 22, 16, 0.22);
+  transition: transform 140ms ease, background-color 140ms ease, border-color 140ms ease;
 }
 
 [data-desa-world] .desa-icon-tile:hover {
-  background-color: #efe5ce;
+  background-color: #f3ecdd;
+  border-color: #9e8259;
   transform: translateY(-1px);
 }
 
 [data-desa-world] .desa-icon-tile:active {
   transform: translateY(1px);
-  box-shadow: 0 1px 0 #8c6d46;
+  box-shadow: 0 2px 8px -2px rgba(28, 22, 16, 0.2);
 }
 
 [data-desa-world] .desa-scroll::-webkit-scrollbar {

@@ -1,33 +1,34 @@
 import * as THREE from "three";
-import type { DesaWorldPayload } from "@/data/desaWorldData";
+import type { DesaTimeOfDay, DesaWorldPayload } from "@/data/desaWorldData";
 import { buildChibiCharacter, type ChibiRig } from "./chibiBuilder";
+import { buildWeddingCouple, type HeroCoupleRig } from "./brideGroomBuilder";
 import {
+  buildButterfly,
+  buildDetailedChicken,
+  buildDetailedDuck,
+  buildDetailedKoi,
+  buildDetailedSheep,
+  type ButterflyHandle,
+  type DetailedAnimalHandle,
+  type DetailedKoiHandle,
+} from "./faunaBuilder";
+import {
+  createBatikParangTexture,
   createDirtPathTexture,
+  createGalleryBoardTexture,
+  createGebyokTexture,
   createRadialGlowTexture,
   createRiverWaterTexture,
+  createRoofTileTexture,
   createSawahTexture,
   createSignTextTexture,
+  createSkyDomeTexture,
   createSoftCircleTexture,
+  createStoneTileTexture,
+  createStoryBoardTexture,
   createVillageGrassTexture,
   createWoodPlankTexture,
 } from "./textures";
-
-export interface KoiFishHandle {
-  group: THREE.Group;
-  baseX: number;
-  baseZ: number;
-  phase: number;
-  speed: number;
-}
-
-export interface AnimalHandle {
-  group: THREE.Group;
-  kind: "ayam" | "domba" | "bebek";
-  homeX: number;
-  homeZ: number;
-  phase: number;
-  radius: number;
-}
 
 export interface SwayHandle {
   object: THREE.Object3D;
@@ -44,16 +45,31 @@ export interface BalloonHandle {
   phase: number;
 }
 
+export interface CloudHandle {
+  group: THREE.Group;
+  baseX: number;
+  speed: number;
+  range: number;
+}
+
 export interface VillageEnvironmentHandles {
   waterTexture: THREE.CanvasTexture;
   sawahTexture: THREE.CanvasTexture;
+  skyDomeMat: THREE.MeshBasicMaterial;
+  skyTextures: Record<DesaTimeOfDay, THREE.CanvasTexture>;
+  sunDisc: THREE.Mesh;
+  clouds: CloudHandle[];
+  waterWheel: THREE.Group;
+  weddingCouple: HeroCoupleRig;
+  stringLightMat: THREE.MeshStandardMaterial;
   gateDoors: {
     left: THREE.Group;
     right: THREE.Group;
   };
   swaying: SwayHandle[];
-  koiFish: KoiFishHandle[];
-  animals: AnimalHandle[];
+  koiFish: DetailedKoiHandle[];
+  animals: DetailedAnimalHandle[];
+  butterflies: ButterflyHandle[];
   balloons: BalloonHandle[];
   lanternShadeMats: THREE.MeshStandardMaterial[];
   lanternGlowMeshes: THREE.Mesh[];
@@ -86,16 +102,27 @@ export function buildVillageEnvironment(
   const woodTex = createWoodPlankTexture("#8a4f2d", "#5b2f17");
   const darkWoodTex = createWoodPlankTexture("#5c3119", "#3c1e0e");
   const bambooTex = createWoodPlankTexture("#b99652", "#8e6d32");
+  const roofTileTex = createRoofTileTexture("#b45338", "#7d311d");
+  const stoneTileTex = createStoneTileTexture();
+  const runnerBatikTex = createBatikParangTexture("#6b2f21", "#d9a954", "#f4e5c8");
+  const gebyokTex = createGebyokTexture();
+  const galleryBoardTex = createGalleryBoardTexture(payload.mode);
+  const storyBoardTex = createStoryBoardTexture(payload.mode);
   const glowTex = createRadialGlowTexture();
   const circleTex = createSoftCircleTexture();
   const signTex = createSignTextTexture(payload.gapuraTitle, payload.gapuraSubtitle);
+  const skyTextures: Record<DesaTimeOfDay, THREE.CanvasTexture> = {
+    pagi: createSkyDomeTexture("pagi"),
+    sore: createSkyDomeTexture("sore"),
+    malam: createSkyDomeTexture("malam"),
+  };
 
   const grassMat = new THREE.MeshStandardMaterial({ map: grassTex, roughness: 0.92 });
-  const dirtMat = new THREE.MeshStandardMaterial({ map: dirtTex, roughness: 0.95 });
+  const dirtMat = new THREE.MeshStandardMaterial({ map: dirtTex, roughness: 0.92 });
   const waterMat = new THREE.MeshStandardMaterial({
     map: waterTexture,
-    roughness: 0.25,
-    metalness: 0.12,
+    roughness: 0.22,
+    metalness: 0.14,
     transparent: true,
     opacity: 0.94,
   });
@@ -107,169 +134,350 @@ export function buildVillageEnvironment(
   const woodMat = new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.78 });
   const darkWoodMat = new THREE.MeshStandardMaterial({ map: darkWoodTex, roughness: 0.8 });
   const bambooMat = new THREE.MeshStandardMaterial({ map: bambooTex, roughness: 0.76 });
-  const terracottaMat = new THREE.MeshStandardMaterial({ color: "#b65439", roughness: 0.78 });
-  const roofDarkMat = new THREE.MeshStandardMaterial({ color: "#8c3c27", roughness: 0.8 });
+  const terracottaMat = new THREE.MeshStandardMaterial({ map: roofTileTex, roughness: 0.75 });
+  const roofDarkMat = new THREE.MeshStandardMaterial({ color: "#803421", roughness: 0.78 });
+  const stoneTileMat = new THREE.MeshStandardMaterial({ map: stoneTileTex, roughness: 0.82 });
+  const runnerBatikMat = new THREE.MeshStandardMaterial({ map: runnerBatikTex, roughness: 0.72 });
+  const gebyokMat = new THREE.MeshStandardMaterial({ map: gebyokTex, roughness: 0.65 });
   const bundMat = new THREE.MeshStandardMaterial({ color: "#5f8c44", roughness: 0.9 });
   const barkMat = new THREE.MeshStandardMaterial({ color: "#68432b", roughness: 0.88 });
-  const creamMat = new THREE.MeshStandardMaterial({ color: "#f6efe2", roughness: 0.75 });
-  const goldMat = new THREE.MeshStandardMaterial({ color: "#dfa84d", roughness: 0.45, metalness: 0.18 });
+  const creamMat = new THREE.MeshStandardMaterial({ color: "#f6efe2", roughness: 0.72 });
+  const ivorySilkMat = new THREE.MeshStandardMaterial({ color: "#fbf6eb", roughness: 0.6 });
+  const goldMat = new THREE.MeshStandardMaterial({ color: "#dfa84d", roughness: 0.32, metalness: 0.55 });
   const stoneMat = new THREE.MeshStandardMaterial({ color: "#9ba39e", roughness: 0.85 });
+  const janurMat = new THREE.MeshStandardMaterial({ color: "#e8d274", roughness: 0.68 });
+  const stringLightMat = new THREE.MeshStandardMaterial({
+    color: "#fff4d2",
+    emissive: new THREE.Color("#ffc058"),
+    emissiveIntensity: 0.9,
+    roughness: 0.35,
+  });
 
   const swaying: SwayHandle[] = [];
-  const koiFish: KoiFishHandle[] = [];
-  const animals: AnimalHandle[] = [];
+  const koiFish: DetailedKoiHandle[] = [];
+  const animals: DetailedAnimalHandle[] = [];
+  const butterflies: ButterflyHandle[] = [];
   const balloons: BalloonHandle[] = [];
+  const clouds: CloudHandle[] = [];
   const lanternShadeMats: THREE.MeshStandardMaterial[] = [];
   const lanternGlowMeshes: THREE.Mesh[] = [];
   const celebrantRigs: ChibiRig[] = [];
   const stationMeshes: Record<string, THREE.Object3D> = {};
 
   // ==========================================================
-  // 1. TERRAIN & DIAGONAL-FRAMED VILLAGE RIVER (center at x=-5.4)
+  // 0. SKY DOME, CELESTIAL DISC & DRIFTING STYLIZED CLOUDS
   // ==========================================================
-  // Outer earth plinth skirt
+  const skyDomeMat = new THREE.MeshBasicMaterial({
+    map: skyTextures.sore,
+    side: THREE.BackSide,
+    fog: false,
+    depthWrite: false,
+  });
+  const skyDome = new THREE.Mesh(new THREE.SphereGeometry(85, 24, 16), skyDomeMat);
+  worldGroup.add(skyDome);
+
+  const sunDisc = new THREE.Mesh(
+    new THREE.SphereGeometry(2.6, 18, 16),
+    new THREE.MeshBasicMaterial({ color: "#ffe7b5", fog: false }),
+  );
+  sunDisc.position.set(24, 21, -34);
+  worldGroup.add(sunDisc);
+
+  const cloudMat = new THREE.MeshStandardMaterial({
+    color: "#fffcf5",
+    roughness: 0.95,
+    metalness: 0,
+    transparent: true,
+    opacity: 0.88,
+  });
+  const cloudConfigs = [
+    { x: -18, y: 14.5, z: -22, s: 1.35, speed: 0.22 },
+    { x: -4, y: 16.0, z: -25, s: 1.55, speed: 0.16 },
+    { x: 14, y: 14.0, z: -20, s: 1.25, speed: 0.2 },
+    { x: -24, y: 15.0, z: -4, s: 1.15, speed: 0.18 },
+    { x: 20, y: 16.5, z: 2, s: 1.3, speed: 0.14 },
+    { x: -12, y: 17.2, z: 16, s: 1.1, speed: 0.24 },
+    { x: 8, y: 15.5, z: 18, s: 1.2, speed: 0.19 },
+    { x: 24, y: 13.8, z: -12, s: 1.1, speed: 0.21 },
+    { x: -20, y: 13.6, z: 10, s: 1.0, speed: 0.17 },
+  ];
+  cloudConfigs.forEach((cfg) => {
+    const cg = new THREE.Group();
+    const puffs = [
+      { dx: 0, dy: 0, dz: 0, r: 1.2 },
+      { dx: -1.1, dy: -0.25, dz: 0.15, r: 0.9 },
+      { dx: 1.15, dy: -0.2, dz: -0.1, r: 0.95 },
+      { dx: 0.35, dy: 0.35, dz: 0.25, r: 0.85 },
+    ];
+    puffs.forEach((p) => {
+      const m = new THREE.Mesh(new THREE.SphereGeometry(p.r, 12, 10), cloudMat);
+      m.position.set(p.dx, p.dy, p.dz);
+      m.scale.set(1.25, 0.72, 0.9);
+      cg.add(m);
+    });
+    cg.scale.setScalar(cfg.s);
+    cg.position.set(cfg.x, cfg.y, cfg.z);
+    worldGroup.add(cg);
+    clouds.push({ group: cg, baseX: cfg.x, speed: cfg.speed, range: 6.5 });
+  });
+
+  // ==========================================================
+  // 1. TERRAIN & RIVER STREAM (center at x=-5.4)
+  // ==========================================================
   const plinth = new THREE.Mesh(
-    new THREE.BoxGeometry(36, 1.4, 34),
+    new THREE.BoxGeometry(38, 1.5, 36),
     new THREE.MeshStandardMaterial({ color: "#523a28", roughness: 0.95 }),
   );
-  plinth.position.set(0, -0.78, 0);
+  plinth.position.set(0, -0.83, 0);
   worldGroup.add(plinth);
 
-  // Left bank (-18 .. -6.5) -> width 11.5, center -12.25
-  const leftBank = new THREE.Mesh(new THREE.BoxGeometry(11.5, 0.24, 34), grassMat);
-  leftBank.position.set(-12.25, -0.12, 0);
+  const leftBank = new THREE.Mesh(new THREE.BoxGeometry(12.5, 0.24, 36), grassMat);
+  leftBank.position.set(-12.75, -0.12, 0);
   leftBank.receiveShadow = true;
   worldGroup.add(leftBank);
 
-  // Main village meadow (-4.3 .. +18) -> width 22.3, center +6.85
-  const rightMeadow = new THREE.Mesh(new THREE.BoxGeometry(22.3, 0.24, 34), grassMat);
-  rightMeadow.position.set(6.85, -0.12, 0);
+  const rightMeadow = new THREE.Mesh(new THREE.BoxGeometry(23.3, 0.24, 36), grassMat);
+  rightMeadow.position.set(7.35, -0.12, 0);
   rightMeadow.receiveShadow = true;
   worldGroup.add(rightMeadow);
 
-  // Riverbed & water (x in [-6.5 .. -4.3])
   const riverBed = new THREE.Mesh(
-    new THREE.PlaneGeometry(2.6, 34),
-    new THREE.MeshStandardMaterial({ color: "#224644", roughness: 0.95 }),
+    new THREE.PlaneGeometry(2.6, 36),
+    new THREE.MeshStandardMaterial({ color: "#1d3d3b", roughness: 0.95 }),
   );
   riverBed.rotation.x = -Math.PI / 2;
   riverBed.position.set(-5.4, -0.22, 0);
   worldGroup.add(riverBed);
 
-  const riverSurface = new THREE.Mesh(new THREE.PlaneGeometry(2.35, 34), waterMat);
+  const riverSurface = new THREE.Mesh(new THREE.PlaneGeometry(2.35, 36), waterMat);
   riverSurface.rotation.x = -Math.PI / 2;
   riverSurface.position.set(-5.4, -0.07, 0);
   riverSurface.receiveShadow = true;
   worldGroup.add(riverSurface);
 
-  // Riverbank pebbles & lotus lily pads
+  // Riverbank boulders, lotus pads, flowers & InstancedMesh water reeds
   const lilyMat = new THREE.MeshStandardMaterial({ color: "#3d854b", roughness: 0.72 });
-  const lotusMat = new THREE.MeshStandardMaterial({ color: "#f39eb6", roughness: 0.6 });
-  for (let i = 0; i < 18; i++) {
-    const zPos = -11 + i * 1.3;
-    const bankSide = i % 2 === 0 ? -6.38 : -4.42;
-    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16 + (i % 3) * 0.06, 0), stoneMat);
-    rock.scale.set(1.2, 0.65, 1.0);
+  const lotusMat = new THREE.MeshStandardMaterial({ color: "#f6a9bf", roughness: 0.55 });
+  const mossyStoneMat = new THREE.MeshStandardMaterial({ color: "#768378", roughness: 0.9 });
+  const reedPositions: { x: number; z: number; h: number; r: number }[] = [];
+
+  for (let i = 0; i < 24; i++) {
+    const zPos = -12 + i * 1.15;
+    const bankSide = i % 2 === 0 ? -6.36 : -4.44;
+    const rock = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(0.18 + (i % 4) * 0.06, 0),
+      i % 3 === 0 ? mossyStoneMat : stoneMat,
+    );
+    rock.scale.set(1.25, 0.65, 1.05);
+    rock.rotation.y = i * 0.7;
     rock.position.set(bankSide, 0.02, zPos);
+    rock.castShadow = true;
     worldGroup.add(rock);
 
-    if (Math.abs(zPos - 2.2) > 1.7 && i % 3 === 0) {
-      const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.025, 14), lilyMat);
-      pad.position.set(-5.4 + ((i % 5) - 2) * 0.22, -0.05, zPos);
-      worldGroup.add(pad);
-      if (i % 6 === 0) {
-        const lotus = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 6), lotusMat);
-        lotus.scale.set(1, 0.75, 1);
-        lotus.position.set(pad.position.x + 0.05, 0.0, pad.position.z);
-        worldGroup.add(lotus);
+    if (Math.abs(zPos - 2.2) > 1.8) {
+      if (i % 2 === 0) {
+        reedPositions.push({ x: bankSide + (i % 4 === 0 ? 0.16 : -0.16), z: zPos + 0.15, h: 0.55 + (i % 3) * 0.14, r: i * 0.4 });
+        reedPositions.push({ x: bankSide + (i % 4 === 0 ? 0.22 : -0.22), z: zPos - 0.1, h: 0.45 + (i % 2) * 0.12, r: i * 0.9 });
+      }
+      if (i % 3 === 0) {
+        const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.025, 14), lilyMat);
+        pad.position.set(-5.4 + ((i % 5) - 2) * 0.22, -0.05, zPos);
+        worldGroup.add(pad);
+        if (i % 6 === 0) {
+          const lotus = new THREE.Group();
+          lotus.position.set(pad.position.x + 0.04, 0.0, pad.position.z);
+          for (let p = 0; p < 5; p++) {
+            const ang = (p / 5) * Math.PI * 2;
+            const petal = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.11, 5), lotusMat);
+            petal.rotation.z = -0.55;
+            petal.rotation.y = ang;
+            petal.position.set(Math.cos(ang) * 0.04, 0.02, Math.sin(ang) * 0.04);
+            lotus.add(petal);
+          }
+          worldGroup.add(lotus);
+        }
       }
     }
   }
 
-  // Swimming Koi Fish in stream
-  const koiOrangeMat = new THREE.MeshStandardMaterial({ color: "#f06a38", roughness: 0.45 });
+  if (reedPositions.length > 0) {
+    const reedGeo = new THREE.ConeGeometry(0.025, 1, 5);
+    const reedMat = new THREE.MeshStandardMaterial({ color: "#588c42", roughness: 0.85 });
+    const reedInst = new THREE.InstancedMesh(reedGeo, reedMat, reedPositions.length);
+    const dummy = new THREE.Object3D();
+    reedPositions.forEach((rp, idx) => {
+      dummy.position.set(rp.x, rp.h * 0.42, rp.z);
+      dummy.scale.set(1, rp.h, 1);
+      dummy.rotation.set(Math.sin(rp.r) * 0.14, rp.r, Math.cos(rp.r) * 0.14);
+      dummy.updateMatrix();
+      reedInst.setMatrixAt(idx, dummy.matrix);
+    });
+    reedInst.instanceMatrix.needsUpdate = true;
+    worldGroup.add(reedInst);
+  }
+
+  // Rotating Bamboo Waterwheel (Kincir Air) upstream at (-4.45, 0.35, -4.8)
+  const waterWheel = new THREE.Group();
+  waterWheel.position.set(-4.45, 0.42, -4.8);
+  {
+    const rimMat = bambooMat;
+    const wheelRim1 = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.045, 8, 20), rimMat);
+    wheelRim1.rotation.y = Math.PI / 2;
+    wheelRim1.position.x = -0.18;
+    const wheelRim2 = wheelRim1.clone();
+    wheelRim2.position.x = 0.18;
+    const axle = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.72, 8), darkWoodMat);
+    axle.rotation.z = Math.PI / 2;
+    waterWheel.add(wheelRim1, wheelRim2, axle);
+
+    for (let s = 0; s < 8; s++) {
+      const ang = (s / 8) * Math.PI * 2;
+      const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.24, 0.04), darkWoodMat);
+      spoke.rotation.x = ang;
+      spoke.position.x = -0.18;
+      const spoke2 = spoke.clone();
+      spoke2.position.x = 0.18;
+
+      const paddle = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.12, 0.03), woodMat);
+      paddle.position.set(0, Math.sin(ang) * 0.62, Math.cos(ang) * 0.62);
+      paddle.rotation.x = -ang;
+      waterWheel.add(spoke, spoke2, paddle);
+    }
+
+    // Support A-frame posts standing on riverbank
+    [-0.45, 0.45].forEach((sz) => {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.86, 7), darkWoodMat);
+      post.position.set(-4.12, 0.32, -4.8 + sz);
+      post.rotation.z = 0.18;
+      worldGroup.add(post);
+    });
+  }
+  worldGroup.add(waterWheel);
+
+  // Swimming Detailed Koi Fish in stream
   for (let i = 0; i < 4; i++) {
-    const koiGroup = new THREE.Group();
-    const fishBody = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 8), koiOrangeMat);
-    fishBody.scale.set(0.65, 0.5, 1.8);
-    const tail = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.14, 4), creamMat);
-    tail.rotation.x = -Math.PI / 2;
-    tail.position.z = -0.2;
-    koiGroup.add(fishBody, tail);
     const baseZ = -6 + i * 4.5;
     const baseX = -5.4 + (i % 2 === 0 ? -0.35 : 0.35);
-    koiGroup.position.set(baseX, -0.1, baseZ);
-    worldGroup.add(koiGroup);
-    koiFish.push({ group: koiGroup, baseX, baseZ, phase: i * 1.7, speed: 0.7 + i * 0.15 });
+    const koi = buildDetailedKoi(i, baseX, baseZ, i * 1.7, 0.7 + i * 0.15);
+    worldGroup.add(koi.group);
+    koiFish.push(koi);
   }
 
   // ==========================================================
-  // 2. STEPPED SAWAH TERASERING (Green & Golden Rice Terraces)
+  // 2. STEPPED SAWAH TERASERING (InstancedMesh Rice Tufts + Gubuk Sawah)
   // ==========================================================
+  const riceInstances: { x: number; y: number; z: number; s: number; rot: number }[] = [];
+
   const addSawahTerrace = (x: number, z: number, w: number, d: number, y: number) => {
     const terraceGroup = new THREE.Group();
-    const bund = new THREE.Mesh(new THREE.BoxGeometry(w, 0.26, d), bundMat);
+    const bund = new THREE.Mesh(new THREE.BoxGeometry(w, 0.28, d), bundMat);
     bund.position.set(x, y, z);
     bund.receiveShadow = true;
     bund.castShadow = true;
 
-    const pool = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.32, d - 0.32), sawahMat);
+    const pool = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.34, d - 0.34), sawahMat);
     pool.rotation.x = -Math.PI / 2;
-    pool.position.set(x, y + 0.138, z);
+    pool.position.set(x, y + 0.145, z);
 
     terraceGroup.add(bund, pool);
 
-    // Lush rows of rice stalks
-    const cols = Math.max(4, Math.floor(w / 0.85));
-    const rows = Math.max(3, Math.floor(d / 0.85));
-    const stalkMat = new THREE.MeshStandardMaterial({
-      color: y > 0.45 ? "#7ab849" : "#65a344",
-      roughness: 0.85,
-    });
-    const tipMat = new THREE.MeshStandardMaterial({
-      color: "#d4b44a",
-      roughness: 0.78,
-    });
-
+    const cols = Math.max(6, Math.floor(w / 0.52));
+    const rows = Math.max(4, Math.floor(d / 0.52));
     for (let cx = 0; cx < cols; cx++) {
       for (let cz = 0; cz < rows; cz++) {
-        if ((cx + cz) % 2 !== 0) continue;
-        const sx = x - (w - 0.7) / 2 + cx * ((w - 0.7) / Math.max(1, cols - 1));
-        const sz = z - (d - 0.7) / 2 + cz * ((d - 0.7) / Math.max(1, rows - 1));
-        const stalk = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.38, 5), stalkMat);
-        stalk.position.set(sx, y + 0.3, sz);
-        const tip = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 5), tipMat);
-        tip.position.set(sx, y + 0.48, sz);
-        terraceGroup.add(stalk, tip);
+        const sx = x - (w - 0.65) / 2 + cx * ((w - 0.65) / Math.max(1, cols - 1));
+        const sz = z - (d - 0.65) / 2 + cz * ((d - 0.65) / Math.max(1, rows - 1));
+        riceInstances.push({
+          x: sx + ((cx * 7 + cz * 3) % 3 - 1) * 0.04,
+          y: y + 0.15,
+          z: sz + ((cx * 5 + cz * 11) % 3 - 1) * 0.04,
+          s: 0.85 + ((cx + cz) % 4) * 0.1,
+          rot: (cx * 1.3 + cz * 0.7) % (Math.PI * 2),
+        });
       }
     }
 
     worldGroup.add(terraceGroup);
   };
 
-  // Back hillside stepped sawah behind Cerita & Pendopo (z < -6)
-  addSawahTerrace(-1.5, -7.8, 9.5, 2.8, 0.14);
-  addSawahTerrace(-1.0, -10.5, 11.2, 2.7, 0.42);
-  addSawahTerrace(0.2, -13.1, 13.0, 2.6, 0.72);
-  // Left hillside sawah beyond entry path
-  addSawahTerrace(-11.4, -4.5, 6.2, 7.2, 0.14);
-  addSawahTerrace(-13.8, -4.5, 3.6, 8.8, 0.44);
+  addSawahTerrace(-1.5, -8.2, 10.6, 2.8, 0.14);
+  addSawahTerrace(-0.8, -10.9, 12.4, 2.7, 0.44);
+  addSawahTerrace(0.4, -13.5, 14.2, 2.6, 0.76);
+  addSawahTerrace(-11.6, -4.5, 6.4, 7.6, 0.14);
+  addSawahTerrace(-14.2, -4.5, 3.8, 9.2, 0.46);
 
-  // Far misty mountain silhouettes on outer horizon for depth
-  const mtnMat = new THREE.MeshStandardMaterial({ color: "#5e8772", roughness: 0.95 });
+  if (riceInstances.length > 0) {
+    const tuftGeo = new THREE.ConeGeometry(0.11, 0.4, 5);
+    const tuftMat = new THREE.MeshStandardMaterial({ color: "#76b249", roughness: 0.84 });
+    const tipGeo = new THREE.SphereGeometry(0.052, 6, 5);
+    const tipMat = new THREE.MeshStandardMaterial({ color: "#dcb84e", roughness: 0.75 });
+
+    const tuftMesh = new THREE.InstancedMesh(tuftGeo, tuftMat, riceInstances.length);
+    const tipMesh = new THREE.InstancedMesh(tipGeo, tipMat, riceInstances.length);
+    const dummy = new THREE.Object3D();
+
+    riceInstances.forEach((r, idx) => {
+      dummy.position.set(r.x, r.y + 0.18 * r.s, r.z);
+      dummy.scale.set(r.s, r.s, r.s);
+      dummy.rotation.set(0.05, r.rot, 0.04);
+      dummy.updateMatrix();
+      tuftMesh.setMatrixAt(idx, dummy.matrix);
+
+      dummy.position.set(r.x, r.y + 0.36 * r.s, r.z);
+      dummy.updateMatrix();
+      tipMesh.setMatrixAt(idx, dummy.matrix);
+    });
+    tuftMesh.instanceMatrix.needsUpdate = true;
+    tipMesh.instanceMatrix.needsUpdate = true;
+    worldGroup.add(tuftMesh, tipMesh);
+  }
+
+  // Charming background Gubuk Sawah on northern hillside (-5.5, 0.56, -10.8)
+  {
+    const gubuk = new THREE.Group();
+    gubuk.position.set(-5.5, 0.58, -10.8);
+    gubuk.rotation.y = 0.25;
+    [-0.55, 0.55].forEach((gx) => {
+      [-0.55, 0.55].forEach((gz) => {
+        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 1.35, 6), bambooMat);
+        post.position.set(gx, 0.65, gz);
+        gubuk.add(post);
+      });
+    });
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(1.35, 0.08, 1.35), woodMat);
+    floor.position.y = 0.32;
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(1.25, 0.72, 4), terracottaMat);
+    roof.rotation.y = Math.PI / 4;
+    roof.position.y = 1.62;
+    gubuk.add(floor, roof);
+    worldGroup.add(gubuk);
+  }
+
+  // Layered distant hillside & volcanic mountain ranges
+  const mtnBackMat = new THREE.MeshStandardMaterial({ color: "#4d7463", roughness: 0.96 });
+  const mtnMidMat = new THREE.MeshStandardMaterial({ color: "#618b74", roughness: 0.94 });
   const mtnCoords = [
-    { x: -13, z: -18, r: 6.5, h: 6.8 },
-    { x: -2, z: -20, r: 8.2, h: 8.4 },
-    { x: 11, z: -18.5, r: 7.0, h: 6.2 },
+    { x: -16, z: -22, r: 8.5, h: 9.2, back: true },
+    { x: -3, z: -25, r: 10.5, h: 11.4, back: true },
+    { x: 13, z: -22, r: 9.0, h: 8.8, back: true },
+    { x: -22, z: -12, r: 7.5, h: 7.2, back: true },
+    { x: -10, z: -18, r: 5.8, h: 5.4, back: false },
+    { x: 3, z: -19, r: 6.4, h: 6.0, back: false },
+    { x: 16, z: -17, r: 5.6, h: 5.0, back: false },
+    { x: -20, z: 2, r: 6.2, h: 5.2, back: false },
   ];
   mtnCoords.forEach((m) => {
-    const peak = new THREE.Mesh(new THREE.ConeGeometry(m.r, m.h, 7), mtnMat);
-    peak.position.set(m.x, m.h * 0.42, m.z);
+    const peak = new THREE.Mesh(
+      new THREE.ConeGeometry(m.r, m.h, 8),
+      m.back ? mtnBackMat : mtnMidMat,
+    );
+    peak.position.set(m.x, m.h * 0.4, m.z);
+    peak.rotation.y = m.x * 0.2;
     worldGroup.add(peak);
   });
 
   // ==========================================================
-  // 3. VILLAGE FOOTPATHS & KAMBOJA PETAL HEART
+  // 3. SANDSTONE PATHWAYS, STONE CURBS & WEDDING AISLE
   // ==========================================================
   const addPathRect = (x: number, z: number, w: number, d: number, rotY = 0) => {
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, d), dirtMat);
@@ -280,147 +488,255 @@ export function buildVillageEnvironment(
     worldGroup.add(mesh);
   };
 
-  // Entry path (left bank -> gate -> bridge)
-  addPathRect(-9.2, 2.2, 6.0, 1.85);
-  // Central main walkway from bridge eastward past plaza toward Galeri
-  addPathRect(1.5, 2.2, 11.8, 1.9);
-  // Cross walkway northward past Kado & Pendopo
-  addPathRect(2.1, -0.6, 1.75, 6.8);
-  // Branch to Pendopo Acara
-  addPathRect(4.5, -3.5, 5.2, 1.75);
-  // Branch to Cerita & Bale Ucapan
-  addPathRect(-2.4, -0.5, 1.5, 5.4);
+  // Entry path -> Bridge -> Central courtyard
+  addPathRect(-9.2, 2.2, 6.2, 1.95);
+  addPathRect(1.6, 2.2, 12.2, 2.1);
+  // Courtyard cross path & branch to story/kado
+  addPathRect(1.2, -0.4, 1.75, 5.2);
+  addPathRect(-2.1, -0.8, 1.55, 5.6);
 
-  // Kamboja & Melati Heart Petal Inlay in village plaza
-  const petalPinkMat = new THREE.MeshStandardMaterial({ color: "#e88a93", roughness: 0.75 });
-  const petalWhiteMat = new THREE.MeshStandardMaterial({ color: "#fff8ec", roughness: 0.7 });
-  const heartCenter = { x: 1.65, z: 1.1 };
+  // Diagonal ceremonial sandstone aisle leading straight into rotated Pendopo front steps!
+  // From central plaza (1.8, 1.2) -> Pendopo step front (4.65, -2.05)
+  const aisleDx = 4.65 - 1.8;
+  const aisleDz = -2.05 - 1.2;
+  const aisleLen = Math.hypot(aisleDx, aisleDz);
+  const aisleAngle = Math.atan2(aisleDx, aisleDz);
+  const weddingAisle = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.15, aisleLen + 0.6),
+    stoneTileMat,
+  );
+  weddingAisle.rotation.x = -Math.PI / 2;
+  weddingAisle.rotation.z = aisleAngle;
+  weddingAisle.position.set((1.8 + 4.65) / 2, 0.016, (1.2 - 2.05) / 2);
+  weddingAisle.receiveShadow = true;
+  worldGroup.add(weddingAisle);
+
+  // Scattered flower petals along the ceremonial aisle & heart inlay in central plaza
+  const petalPinkMat = new THREE.MeshStandardMaterial({ color: "#eda3b0", roughness: 0.7 });
+  const petalWhiteMat = new THREE.MeshStandardMaterial({ color: "#fffaf0", roughness: 0.65 });
+  for (let i = 0; i < 24; i++) {
+    const frac = i / 23;
+    const ax = 1.8 + aisleDx * frac;
+    const az = 1.2 + aisleDz * frac;
+    const side = i % 2 === 0 ? -0.78 : 0.78;
+    const perpX = Math.cos(aisleAngle) * side;
+    const perpZ = -Math.sin(aisleAngle) * side;
+    const p = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.065, 0.065, 0.018, 6),
+      i % 2 === 0 ? petalWhiteMat : petalPinkMat,
+    );
+    p.position.set(ax + perpX, 0.022, az + perpZ);
+    worldGroup.add(p);
+  }
+
+  // Heart floral inlay in central plaza
+  const heartCenter = { x: 1.45, z: 1.35 };
   for (let i = 0; i < 20; i++) {
     const t = (i / 20) * Math.PI * 2;
-    const hx = 0.045 * 16 * Math.pow(Math.sin(t), 3);
+    const hx = 0.042 * 16 * Math.pow(Math.sin(t), 3);
     const hz =
-      -0.045 *
+      -0.042 *
       (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
     const petal = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.085, 0.085, 0.02, 7),
+      new THREE.CylinderGeometry(0.08, 0.08, 0.02, 7),
       i % 2 === 0 ? petalPinkMat : petalWhiteMat,
     );
-    petal.position.set(heartCenter.x + hx, 0.02, heartCenter.z + hz);
+    petal.position.set(heartCenter.x + hx, 0.022, heartCenter.z + hz);
     worldGroup.add(petal);
   }
 
   // ==========================================================
-  // 4. BAMBOO & TEAK ARCHED BRIDGE (at x=-5.4, z=2.2)
+  // 4. ARCHED TEAK & BAMBOO BRIDGE (at x=-5.4, z=2.2)
   // ==========================================================
   const bridgeGroup = new THREE.Group();
   bridgeGroup.position.set(-5.4, 0, 2.2);
   worldGroup.add(bridgeGroup);
 
-  const plankCount = 13;
+  // Stone bridge abutments on both banks
+  [-1.6, 1.6].forEach((bx) => {
+    const abut = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.34, 2.25), stoneTileMat);
+    abut.position.set(bx, 0.02, 0);
+    abut.receiveShadow = true;
+    bridgeGroup.add(abut);
+  });
+
+  const plankCount = 15;
   for (let i = 0; i < plankCount; i++) {
-    const frac = i / (plankCount - 1); // 0 .. 1
-    const bx = -1.5 + frac * 3.0;
+    const frac = i / (plankCount - 1);
+    const bx = -1.55 + frac * 3.1;
     const archY = Math.sin(frac * Math.PI) * 0.28 + 0.04;
-    const plank = new THREE.Mesh(new THREE.BoxGeometry(0.21, 0.09, 1.75), woodMat);
+    const plank = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.09, 1.85), woodMat);
     plank.position.set(bx, archY, 0);
     plank.castShadow = true;
     plank.receiveShadow = true;
     bridgeGroup.add(plank);
   }
 
-  // Bamboo handrails on both sides of bridge
-  [-0.86, 0.86].forEach((rz) => {
-    [-1.4, 0, 1.4].forEach((px, idx) => {
-      const py = idx === 1 ? 0.56 : 0.34;
-      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.06, 0.62, 8), bambooMat);
+  [-0.9, 0.9].forEach((rz) => {
+    // Under-stringer curved beam
+    const stringer = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.11, 0.1), darkWoodMat);
+    stringer.position.set(0, 0.14, rz);
+    bridgeGroup.add(stringer);
+
+    [-1.45, 0, 1.45].forEach((px, idx) => {
+      const py = idx === 1 ? 0.56 : 0.36;
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.065, 0.72, 8), darkWoodMat);
       post.position.set(px, py, rz);
       post.castShadow = true;
       bridgeGroup.add(post);
 
       if (idx !== 1) {
-        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), creamMat);
-        cap.position.set(px, py + 0.33, rz);
-        bridgeGroup.add(cap);
+        const capMat = new THREE.MeshStandardMaterial({
+          color: "#fff3cc",
+          emissive: new THREE.Color("#ffb64d"),
+          emissiveIntensity: 0.75,
+          roughness: 0.4,
+        });
+        lanternShadeMats.push(capMat);
+        const lanternTop = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.2, 0.16), capMat);
+        lanternTop.position.set(px, py + 0.44, rz);
+        const lanternHat = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.11, 4), roofDarkMat);
+        lanternHat.rotation.y = Math.PI / 4;
+        lanternHat.position.set(px, py + 0.59, rz);
+        bridgeGroup.add(lanternTop, lanternHat);
       }
     });
-    const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 3.0, 8), bambooMat);
+    const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.042, 3.05, 8), bambooMat);
     rail.rotation.z = Math.PI / 2;
-    rail.position.set(0, 0.68, rz);
+    rail.position.set(0, 0.72, rz);
     bridgeGroup.add(rail);
   });
 
   // ==========================================================
-  // 5. GAPURA DESA NUSANTARA + SWINGING WOODEN DOORS (-7.3, 2.2)
+  // 5. GRAND WEDDING GAPURA + PENJOR ARCHES (-7.3, 0, 2.2)
   // ==========================================================
   const gapuraGroup = new THREE.Group();
   gapuraGroup.position.set(-7.3, 0, 2.2);
   worldGroup.add(gapuraGroup);
 
-  // Two carved teak pillars
-  [-1.08, 1.08].forEach((pz) => {
-    const stoneBase = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.25, 0.42), stoneMat);
-    stoneBase.position.set(0, 0.12, pz);
-    const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.24, 2.35, 0.24), darkWoodMat);
-    pillar.position.set(0, 1.28, pz);
+  [-1.12, 1.12].forEach((pz) => {
+    const stonePlinth = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.32, 0.56), stoneTileMat);
+    stonePlinth.position.set(0, 0.16, pz);
+    const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.26, 2.45, 0.26), darkWoodMat);
+    pillar.position.set(0, 1.38, pz);
     pillar.castShadow = true;
-    gapuraGroup.add(stoneBase, pillar);
+    const goldBand = new THREE.Mesh(new THREE.BoxGeometry(0.29, 0.08, 0.29), goldMat);
+    goldBand.position.set(0, 2.15, pz);
+    gapuraGroup.add(stonePlinth, pillar, goldBand);
   });
 
-  // Crossbeam & tiered terracotta Javanese roof
-  const beam = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.24, 2.65), woodMat);
-  beam.position.set(0, 2.35, 0);
+  const beam = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.26, 2.8), woodMat);
+  beam.position.set(0, 2.48, 0);
   beam.castShadow = true;
   gapuraGroup.add(beam);
 
-  const roofLower = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.22, 3.1), terracottaMat);
-  roofLower.position.set(0, 2.62, 0);
+  const roofLower = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.22, 3.25), terracottaMat);
+  roofLower.position.set(0, 2.75, 0);
   roofLower.castShadow = true;
-  const roofUpper = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.9, 0.56, 4), roofDarkMat);
+  const roofUpper = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.95, 0.62, 4), roofDarkMat);
   roofUpper.rotation.y = Math.PI / 4;
-  roofUpper.scale.set(0.75, 1, 2.15);
-  roofUpper.position.set(0, 2.98, 0);
+  roofUpper.scale.set(0.76, 1, 2.22);
+  roofUpper.position.set(0, 3.14, 0);
   roofUpper.castShadow = true;
-  gapuraGroup.add(roofLower, roofUpper);
+  const ridgeFinial = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), goldMat);
+  ridgeFinial.position.set(0, 3.48, 0);
+  gapuraGroup.add(roofLower, roofUpper, ridgeFinial);
 
-  // Janur & Melati garland accents
-  for (let i = -4; i <= 4; i++) {
+  // Lush Janur & Melati floral swag across the Gapura arch
+  for (let i = -5; i <= 5; i++) {
     const flower = new THREE.Mesh(
-      new THREE.SphereGeometry(0.075, 8, 8),
-      i % 2 === 0 ? creamMat : goldMat,
+      new THREE.SphereGeometry(0.072, 8, 8),
+      i % 2 === 0 ? ivorySilkMat : goldMat,
     );
-    flower.position.set(-0.22, 2.24 - Math.cos(i * 0.35) * 0.1, i * 0.24);
+    flower.position.set(-0.24, 2.34 - Math.cos(i * 0.3) * 0.11, i * 0.21);
     gapuraGroup.add(flower);
   }
 
-  // Hanging Nameplate on Gapura facing incoming camera
+  // Carved Nameplate on Gapura facing -X toward incoming guest
   const signMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(0.08, 0.56, 1.56),
-    new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.65 }),
+    new THREE.BoxGeometry(0.08, 0.58, 1.65),
+    new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.6 }),
   );
-  signMesh.rotation.y = -Math.PI / 2; // make texture legible when approached
-  signMesh.position.set(-0.26, 2.02, 0);
-  // Wait: BoxGeometry faces: +/-X use signTex! So don't rotate Y, orient flat face toward -X!
-  signMesh.rotation.y = 0;
+  signMesh.position.set(-0.28, 2.1, 0);
   gapuraGroup.add(signMesh);
 
   // Double Hinged Doors
   const makeGateDoor = (hingeZ: number, leafDir: number) => {
     const pivot = new THREE.Group();
     pivot.position.set(0, 0, hingeZ);
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.35, 0.86), terracottaMat);
-    frame.position.set(0, 0.72, leafDir * 0.44);
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.38, 0.88), darkWoodMat);
+    frame.position.set(0, 0.74, leafDir * 0.45);
     frame.castShadow = true;
-    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.14, 0.76), bambooMat);
-    bar.position.set(0, 0.95, leafDir * 0.44);
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.14, 0.78), goldMat);
+    bar.position.set(0, 0.98, leafDir * 0.45);
     pivot.add(frame, bar);
     gapuraGroup.add(pivot);
     return pivot;
   };
-  const leftGateDoor = makeGateDoor(-0.92, 1);
-  const rightGateDoor = makeGateDoor(0.92, -1);
+  const leftGateDoor = makeGateDoor(-0.94, 1);
+  const rightGateDoor = makeGateDoor(0.94, -1);
+
+  // Helper: Tall Graceful Arching Penjor (Janur Kuning ceremonial bamboo arch)
+  const addPenjor = (
+    x: number,
+    z: number,
+    rotY: number,
+    heightScale = 1.0,
+    parent: THREE.Object3D = worldGroup,
+  ) => {
+    const penjor = new THREE.Group();
+    penjor.position.set(x, 0, z);
+    penjor.rotation.y = rotY;
+    penjor.scale.setScalar(heightScale);
+
+    const segs = 9;
+    let curY = 0;
+    let curZ = 0;
+    for (let i = 0; i < segs; i++) {
+      const t = i / (segs - 1);
+      const tiltX = t * t * 0.95;
+      const segLen = 0.42;
+      const seg = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.036 - t * 0.022, 0.044 - t * 0.022, segLen + 0.04, 7),
+        bambooMat,
+      );
+      curY += Math.cos(tiltX) * segLen * 0.82;
+      curZ += Math.sin(tiltX) * segLen * 0.78;
+      seg.position.set(0, curY - segLen * 0.4, curZ);
+      seg.rotation.x = tiltX;
+      seg.castShadow = true;
+      penjor.add(seg);
+
+      if (i >= 4) {
+        const frond = new THREE.Mesh(new THREE.ConeGeometry(0.085, 0.36, 4), janurMat);
+        frond.position.set(0, curY - 0.18, curZ + 0.08);
+        frond.rotation.x = 0.25;
+        penjor.add(frond);
+      }
+    }
+
+    // Hanging decorative Sampian tassel at tip
+    const sampian = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.42, 6), goldMat);
+    sampian.position.set(0, curY - 0.24, curZ + 0.14);
+    sampian.rotation.x = Math.PI;
+    penjor.add(sampian);
+
+    parent.add(penjor);
+    swaying.push({
+      object: penjor,
+      baseRotZ: 0,
+      baseRotX: 0,
+      speed: 1.25,
+      amp: 0.035,
+      phase: x * 0.5 + z * 0.3,
+    });
+  };
+
+  addPenjor(-7.75, 0.6, Math.PI / 2, 0.96);
+  addPenjor(-7.75, 3.8, Math.PI / 2, 0.96);
 
   // ==========================================================
-  // 6. NEAT BAMBOO FENCES ALONG RIVERBANK & GARDEN
+  // 6. BAMBOO FENCES ALONG RIVERBANK & GARDEN
   // ==========================================================
   const addBambooFence = (x1: number, z1: number, x2: number, z2: number) => {
     const dx = x2 - x1;
@@ -452,27 +768,27 @@ export function buildVillageEnvironment(
   addBambooFence(-6.6, 3.5, -6.6, 8.6);
   addBambooFence(-4.2, -5.8, -4.2, 0.9);
   addBambooFence(-4.2, 3.5, -4.2, 8.6);
-  addBambooFence(-4.2, -5.8, 8.8, -5.8);
-  addBambooFence(-4.2, 8.6, 8.8, 8.6);
+  addBambooFence(-4.2, -5.8, 9.2, -5.8);
+  addBambooFence(-4.2, 8.6, 9.2, 8.6);
 
   // ==========================================================
-  // 7. TROPICAL INDONESIAN FLORA (Palms, Banyan, Banana, Bamboo)
+  // 7. TROPICAL INDONESIAN FLORA (Curved Palms, Sculpted Trees, Bamboo)
   // ==========================================================
-  const foliageDarkMat = new THREE.MeshStandardMaterial({ color: "#346c3e", roughness: 0.82 });
-  const foliageMidMat = new THREE.MeshStandardMaterial({ color: "#4c8e4b", roughness: 0.8 });
+  const foliageDarkMat = new THREE.MeshStandardMaterial({ color: "#32693c", roughness: 0.82 });
+  const foliageMidMat = new THREE.MeshStandardMaterial({ color: "#4b8c49", roughness: 0.8 });
   const foliageBrightMat = new THREE.MeshStandardMaterial({ color: "#72b04d", roughness: 0.78 });
-  const palmLeafMat = new THREE.MeshStandardMaterial({ color: "#529847", roughness: 0.76 });
+  const palmLeafMat = new THREE.MeshStandardMaterial({ color: "#4e9445", roughness: 0.75 });
 
-  const addCoconutPalm = (x: number, z: number, height = 3.4, lean = 0.14) => {
+  const addCoconutPalm = (x: number, z: number, height = 3.5, lean = 0.14) => {
     const palm = new THREE.Group();
     palm.position.set(x, 0, z);
 
-    const segs = 6;
+    const segs = 7;
     for (let s = 0; s < segs; s++) {
       const y = (s + 0.5) * (height / segs);
       const xOff = Math.pow(s / segs, 1.5) * lean * 2.2;
       const seg = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.13 - s * 0.01, 0.16 - s * 0.01, height / segs + 0.06, 8),
+        new THREE.CylinderGeometry(0.12 - s * 0.01, 0.155 - s * 0.01, height / segs + 0.06, 8),
         barkMat,
       );
       seg.position.set(xOff, y, 0);
@@ -483,14 +799,18 @@ export function buildVillageEnvironment(
 
     const crown = new THREE.Group();
     crown.position.set(lean * 2.2, height + 0.05, 0);
-    for (let f = 0; f < 6; f++) {
+    for (let f = 0; f < 7; f++) {
       const frondGroup = new THREE.Group();
-      frondGroup.rotation.y = (f / 6) * Math.PI * 2;
-      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.06, 1.55), palmLeafMat);
-      blade.position.set(0, -0.08, 0.78);
-      blade.rotation.x = 0.34;
-      blade.castShadow = true;
-      frondGroup.add(blade);
+      frondGroup.rotation.y = (f / 7) * Math.PI * 2;
+      const blade1 = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.05, 0.9), palmLeafMat);
+      blade1.position.set(0, 0.04, 0.45);
+      blade1.rotation.x = -0.15;
+      blade1.castShadow = true;
+      const blade2 = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.04, 0.85), palmLeafMat);
+      blade2.position.set(0, -0.22, 1.2);
+      blade2.rotation.x = 0.52;
+      blade2.castShadow = true;
+      frondGroup.add(blade1, blade2);
       crown.add(frondGroup);
     }
     for (let c = 0; c < 3; c++) {
@@ -509,32 +829,50 @@ export function buildVillageEnvironment(
       baseRotZ: 0,
       baseRotX: 0,
       speed: 1.4,
-      amp: 0.055,
+      amp: 0.05,
       phase: x * 0.7 + z * 0.5,
     });
   };
 
-  const addTropicalTree = (x: number, z: number, scale = 1.0) => {
+  const addTropicalTree = (x: number, z: number, scale = 1.0, hasBlossoms = false) => {
     const tree = new THREE.Group();
     tree.position.set(x, 0, z);
     tree.scale.setScalar(scale);
 
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, 1.15, 8), barkMat);
-    trunk.position.y = 0.55;
+    // Root flare + main trunk + forked branch
+    const root = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.34, 0.3, 8), barkMat);
+    root.position.y = 0.15;
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.22, 1.15, 8), barkMat);
+    trunk.position.y = 0.72;
     trunk.castShadow = true;
-    tree.add(trunk);
+    const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.72, 7), barkMat);
+    branch.position.set(0.24, 1.25, 0.08);
+    branch.rotation.z = -0.55;
+    tree.add(root, trunk, branch);
 
-    const canopy1 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.86, 1), foliageDarkMat);
-    canopy1.position.set(0, 1.45, 0);
+    const canopy1 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 1), foliageDarkMat);
+    canopy1.position.set(0, 1.55, 0);
     canopy1.castShadow = true;
-    const canopy2 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.68, 1), foliageMidMat);
-    canopy2.position.set(0.28, 1.85, 0.16);
+    const canopy2 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.72, 1), foliageMidMat);
+    canopy2.position.set(0.32, 1.92, 0.18);
     canopy2.castShadow = true;
-    const canopy3 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.56, 1), foliageBrightMat);
-    canopy3.position.set(-0.24, 2.02, -0.12);
+    const canopy3 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.58, 1), foliageBrightMat);
+    canopy3.position.set(-0.26, 2.08, -0.12);
     canopy3.castShadow = true;
-
     tree.add(canopy1, canopy2, canopy3);
+
+    if (hasBlossoms) {
+      for (let b = 0; b < 6; b++) {
+        const ang = (b / 6) * Math.PI * 2;
+        const blossom = new THREE.Mesh(
+          new THREE.SphereGeometry(0.09, 7, 6),
+          b % 2 === 0 ? ivorySilkMat : petalPinkMat,
+        );
+        blossom.position.set(Math.cos(ang) * 0.62, 1.75 + (b % 2) * 0.25, Math.sin(ang) * 0.62);
+        tree.add(blossom);
+      }
+    }
+
     worldGroup.add(tree);
 
     swaying.push({
@@ -542,7 +880,7 @@ export function buildVillageEnvironment(
       baseRotZ: 0,
       baseRotX: 0,
       speed: 1.1,
-      amp: 0.025,
+      amp: 0.022,
       phase: x + z,
     });
   };
@@ -552,16 +890,16 @@ export function buildVillageEnvironment(
     clump.position.set(x, 0, z);
     const stalkGreen = new THREE.MeshStandardMaterial({ color: "#79a84d", roughness: 0.72 });
     const offsets = [
-      { dx: -0.15, dz: -0.1, h: 2.4, r: 0.08 },
-      { dx: 0.14, dz: 0.08, h: 2.8, r: -0.07 },
-      { dx: 0.02, dz: -0.18, h: 2.1, r: 0.04 },
+      { dx: -0.15, dz: -0.1, h: 2.5, r: 0.08 },
+      { dx: 0.14, dz: 0.08, h: 2.9, r: -0.07 },
+      { dx: 0.02, dz: -0.18, h: 2.2, r: 0.04 },
     ];
     offsets.forEach((o) => {
       const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.065, o.h, 7), stalkGreen);
       pole.position.set(o.dx, o.h / 2, o.dz);
       pole.rotation.z = o.r;
       pole.castShadow = true;
-      const tuft = new THREE.Mesh(new THREE.DodecahedronGeometry(0.32, 0), foliageBrightMat);
+      const tuft = new THREE.Mesh(new THREE.DodecahedronGeometry(0.34, 0), foliageBrightMat);
       tuft.scale.set(1.2, 0.65, 1.2);
       tuft.position.set(o.dx - o.r * 1.1, o.h, o.dz);
       clump.add(pole, tuft);
@@ -577,50 +915,49 @@ export function buildVillageEnvironment(
     leaves.position.y = 0.2;
     bush.add(leaves);
     const bMat = new THREE.MeshStandardMaterial({ color: bloomColor, roughness: 0.6 });
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       const f = new THREE.Mesh(new THREE.SphereGeometry(0.07, 7, 6), bMat);
-      f.position.set(Math.cos(i * 1.6) * 0.22, 0.32 + (i % 2) * 0.06, Math.sin(i * 1.6) * 0.22);
+      f.position.set(Math.cos(i * 1.25) * 0.22, 0.32 + (i % 2) * 0.06, Math.sin(i * 1.25) * 0.22);
       bush.add(f);
     }
     worldGroup.add(bush);
   };
 
-  // Perimeter palms & trees around river, gate & village edges
-  addCoconutPalm(-8.6, 5.4, 3.2, 0.15);
-  addCoconutPalm(-7.8, -1.5, 3.5, -0.12);
-  addCoconutPalm(8.4, -4.4, 3.6, -0.15);
-  addCoconutPalm(9.2, 1.2, 3.4, 0.14);
-  addCoconutPalm(5.6, 7.6, 3.3, -0.1);
-  addCoconutPalm(-1.2, 7.8, 3.1, 0.12);
+  addCoconutPalm(-8.6, 5.4, 3.3, 0.15);
+  addCoconutPalm(-7.8, -1.5, 3.6, -0.12);
+  addCoconutPalm(9.2, -4.6, 3.8, -0.15);
+  addCoconutPalm(9.5, 1.4, 3.5, 0.14);
+  addCoconutPalm(5.6, 7.6, 3.4, -0.1);
+  addCoconutPalm(-1.2, 7.8, 3.2, 0.12);
 
-  addTropicalTree(-9.6, 7.4, 1.05);
-  addTropicalTree(-3.4, 7.4, 0.95);
-  addTropicalTree(0.4, 7.2, 1.05);
-  addTropicalTree(8.5, 6.2, 1.1);
-  addTropicalTree(9.6, -1.2, 1.0);
-  addTropicalTree(-8.4, -7.8, 1.15);
-  addTropicalTree(6.8, -7.6, 1.12);
+  addTropicalTree(-9.6, 7.4, 1.05, true);
+  addTropicalTree(-3.4, 7.4, 0.95, false);
+  addTropicalTree(0.4, 7.2, 1.05, true);
+  addTropicalTree(8.8, 6.2, 1.12, true);
+  addTropicalTree(9.8, -1.0, 1.02, false);
+  addTropicalTree(-8.4, -7.8, 1.15, true);
+  addTropicalTree(8.6, -7.6, 1.15, false);
 
   addBambooCluster(-7.8, 4.1);
   addBambooCluster(-3.8, -4.8);
-  addBambooCluster(8.9, 3.8);
-  addBambooCluster(9.0, -5.2);
+  addBambooCluster(9.1, 3.8);
+  addBambooCluster(9.4, -5.8);
 
   addFlowerShrub(-6.2, 1.0, "#f28c9c");
   addFlowerShrub(-6.2, 3.4, "#fff6dd");
-  addFlowerShrub(2.5, 3.1, "#e96e8a");
-  addFlowerShrub(4.6, -2.0, "#fff5db");
+  addFlowerShrub(2.2, 3.4, "#f2a2b3");
+  addFlowerShrub(3.8, -1.6, "#fff5db");
   addFlowerShrub(-0.9, -3.1, "#f4978e");
 
   // ==========================================================
-  // 8. WARM VILLAGE LANTERNS (Emissive Glass + Additive Ground Pools)
+  // 8. GARDEN LANTERN POSTS & OVERHEAD FAIRY STRING LIGHTS
   // ==========================================================
   const addLanternPost = (x: number, z: number) => {
     const postGroup = new THREE.Group();
     postGroup.position.set(x, 0, z);
 
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.07, 1.28, 7), darkWoodMat);
-    pole.position.y = 0.64;
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.07, 1.32, 7), darkWoodMat);
+    pole.position.y = 0.66;
     pole.castShadow = true;
     postGroup.add(pole);
 
@@ -633,12 +970,12 @@ export function buildVillageEnvironment(
     lanternShadeMats.push(shadeMat);
 
     const bulb = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.28, 0.24), shadeMat);
-    bulb.position.y = 1.38;
+    bulb.position.y = 1.42;
     postGroup.add(bulb);
 
     const cap = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.16, 4), roofDarkMat);
     cap.rotation.y = Math.PI / 4;
-    cap.position.y = 1.59;
+    cap.position.y = 1.63;
     postGroup.add(cap);
 
     const glowMat = new THREE.MeshBasicMaterial({
@@ -662,145 +999,267 @@ export function buildVillageEnvironment(
     { x: -6.9, z: 3.5 },
     { x: -3.9, z: 0.9 },
     { x: -3.9, z: 3.5 },
-    { x: 0.4, z: 3.3 },
-    { x: 4.5, z: 3.3 },
-    { x: 3.1, z: -0.9 },
-    { x: 4.9, z: -4.6 },
+    { x: 0.2, z: 3.4 },
+    { x: 4.8, z: 3.5 },
+    { x: 2.9, z: -0.9 },
+    { x: 3.5, z: -3.2 },
     { x: -1.4, z: -1.8 },
   ].forEach((p) => addLanternPost(p.x, p.z));
+
+  // Overhead Fairy String Light Festoons across courtyard & wedding aisle
+  const stringAnchors: [THREE.Vector3, THREE.Vector3][] = [
+    [new THREE.Vector3(-0.2, 2.65, 3.3), new THREE.Vector3(3.1, 2.65, 0.6)],
+    [new THREE.Vector3(3.1, 2.65, 0.6), new THREE.Vector3(4.3, 2.9, -1.8)],
+    [new THREE.Vector3(-0.2, 2.65, 3.3), new THREE.Vector3(-3.3, 2.65, 0.8)],
+  ];
+  const postCoords = [
+    new THREE.Vector3(-0.2, 0, 3.3),
+    new THREE.Vector3(3.1, 0, 0.6),
+    new THREE.Vector3(4.3, 0, -1.8),
+    new THREE.Vector3(-3.3, 0, 0.8),
+  ];
+  postCoords.forEach((pc, idx) => {
+    const h = idx === 2 ? 2.95 : 2.7;
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.06, h, 7), darkWoodMat);
+    pole.position.set(pc.x, h / 2, pc.z);
+    pole.castShadow = true;
+    worldGroup.add(pole);
+  });
+
+  const wireMat = new THREE.MeshBasicMaterial({ color: "#3d291a" });
+  stringAnchors.forEach(([p1, p2]) => {
+    const mid = p1.clone().add(p2).multiplyScalar(0.5);
+    mid.y -= 0.42;
+    const curve = new THREE.QuadraticBezierCurve3(p1, mid, p2);
+    const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 16, 0.012, 4, false), wireMat);
+    worldGroup.add(tube);
+
+    const bulbCount = 8;
+    for (let b = 1; b < bulbCount; b++) {
+      const pt = curve.getPoint(b / bulbCount);
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 6), stringLightMat);
+      bulb.position.copy(pt).add(new THREE.Vector3(0, -0.05, 0));
+      worldGroup.add(bulb);
+    }
+  });
 
   // ==========================================================
   // 9. SIX INTERACTIVE 3D STATIONS (EXACT COORDINATE SYNC)
   // ==========================================================
 
-  // Station 1: SURAT (x: 3.4, z: 2.2) — Carved Teak Mailbox + Protruding Cream Letter
+  // Station 1: SURAT / SAMBUTAN (x: 3.2, z: 2.8) — Carved Teak Podium + Wax-Sealed Letter
   {
     const st = new THREE.Group();
-    st.position.set(3.4, 0, 2.2);
-    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.82, 8), darkWoodMat);
-    post.position.y = 0.41;
-    const box = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.42, 0.72), terracottaMat);
-    box.position.y = 0.96;
-    box.castShadow = true;
-    const boxRoof = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.76, 10, 1, false, 0, Math.PI), roofDarkMat);
-    boxRoof.rotation.z = Math.PI / 2;
-    boxRoof.rotation.y = Math.PI / 2;
-    boxRoof.position.y = 1.15;
-    const envelope = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.04, 0.24), creamMat);
-    envelope.position.set(0, 0.96, 0.39);
-    envelope.rotation.x = 0.15;
+    st.position.set(3.2, 0, 2.8);
+    const pedestal = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.14, 0.7), stoneTileMat);
+    pedestal.position.y = 0.07;
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.13, 0.78, 10), darkWoodMat);
+    post.position.y = 0.5;
+    post.castShadow = true;
+    const desk = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.09, 0.52), woodMat);
+    desk.position.y = 0.92;
+    desk.rotation.x = 0.18;
+    desk.castShadow = true;
+    const envelope = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.035, 0.26), ivorySilkMat);
+    envelope.position.set(0, 0.98, 0.02);
+    envelope.rotation.x = 0.18;
     const wax = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.02, 10), goldMat);
-    wax.position.set(0, 0.99, 0.42);
-    st.add(post, box, boxRoof, envelope, wax);
+    wax.position.set(0, 1.0, 0.03);
+    wax.rotation.x = 0.18;
+    st.add(pedestal, post, desk, envelope, wax);
     worldGroup.add(st);
     stationMeshes.surat = st;
   }
 
-  // Station 2: ACARA / PENDOPO UTAMA (x: 6.2, z: -3.6) — Teak Joglo Pendopo + Floral Arch + Celebrants
+  // Station 2: ACARA / PENDOPO PELAMINAN UTAMA (x: 6.0, z: -3.8, rotation.y = -0.68)
+  // Rotated to face directly toward the central plaza & approaching character!
+  const weddingCouple = buildWeddingCouple(payload.mode);
   {
     const pendopo = new THREE.Group();
-    pendopo.position.set(6.2, 0, -3.6);
+    pendopo.position.set(6.0, 0, -3.8);
+    pendopo.rotation.y = -0.68;
 
-    // Raised stone & teak deck
-    const stoneBase = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.26, 3.6), stoneMat);
-    stoneBase.position.y = 0.13;
+    // Tiered Stone Terrace & Wide Front Steps facing +Z
+    const stoneBase = new THREE.Mesh(new THREE.BoxGeometry(5.1, 0.3, 4.4), stoneTileMat);
+    stoneBase.position.y = 0.15;
     stoneBase.receiveShadow = true;
-    const woodDeck = new THREE.Mesh(new THREE.BoxGeometry(3.9, 0.08, 3.3), woodMat);
-    woodDeck.position.y = 0.28;
+    stoneBase.castShadow = true;
+
+    const woodDeck = new THREE.Mesh(new THREE.BoxGeometry(4.75, 0.1, 4.05), woodMat);
+    woodDeck.position.y = 0.35;
     woodDeck.receiveShadow = true;
-    pendopo.add(stoneBase, woodDeck);
 
-    // Woven tikar runner & 4 carved joglo pillars
-    const runner = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.03, 2.5), creamMat);
-    runner.position.y = 0.33;
-    pendopo.add(runner);
+    const frontStep1 = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.14, 0.55), stoneTileMat);
+    frontStep1.position.set(0, 0.07, 2.42);
+    frontStep1.receiveShadow = true;
+    const frontStep2 = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.14, 0.35), stoneTileMat);
+    frontStep2.position.set(0, 0.21, 2.25);
+    frontStep2.receiveShadow = true;
 
-    [-1.65, 1.65].forEach((px) => {
-      [-1.35, 1.35].forEach((pz) => {
-        const col = new THREE.Mesh(new THREE.BoxGeometry(0.18, 2.15, 0.18), darkWoodMat);
-        col.position.set(px, 1.38, pz);
+    // Raised Pelaminan Dais + Batik Carpet Runner positioned in open front stage bay
+    const pelaminanDais = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.1, 1.85), darkWoodMat);
+    pelaminanDais.position.set(0, 0.43, 0.45);
+    pelaminanDais.receiveShadow = true;
+
+    const batikRunner = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.025, 3.45), runnerBatikMat);
+    batikRunner.position.set(0, 0.415, 0.55);
+    batikRunner.receiveShadow = true;
+
+    pendopo.add(stoneBase, woodDeck, frontStep1, frontStep2, pelaminanDais, batikRunner);
+
+    // 4 Tall Wide-Spaced Carved Soko Guru Pillars with Stone Umpak Bases (generous headroom)
+    [-2.15, 2.15].forEach((px) => {
+      [-1.65, 1.25].forEach((pz) => {
+        const umpak = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.21, 0.22, 8), stoneMat);
+        umpak.position.set(px, 0.5, pz);
+        const col = new THREE.Mesh(new THREE.BoxGeometry(0.22, 3.15, 0.22), darkWoodMat);
+        col.position.set(px, 2.08, pz);
         col.castShadow = true;
-        pendopo.add(col);
+        const goldCap = new THREE.Mesh(new THREE.BoxGeometry(0.27, 0.1, 0.27), goldMat);
+        goldCap.position.set(px, 3.52, pz);
+        pendopo.add(umpak, col, goldCap);
       });
     });
 
-    // Two-tier Javanese Joglo terracotta roof
-    const jogloEaves = new THREE.Mesh(new THREE.ConeGeometry(3.25, 0.78, 4), terracottaMat);
+    // Tumpang Sari Stepped Ceiling Frame + High-Clearance Two-Tier Genteng Joglo Roof
+    const tumpang1 = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.16, 3.2), darkWoodMat);
+    tumpang1.position.set(0, 3.64, -0.25);
+    const tumpang2 = new THREE.Mesh(new THREE.BoxGeometry(2.65, 0.15, 2.05), woodMat);
+    tumpang2.position.set(0, 3.8, -0.25);
+
+    const jogloEaves = new THREE.Mesh(new THREE.ConeGeometry(3.55, 0.92, 4), terracottaMat);
     jogloEaves.rotation.y = Math.PI / 4;
-    jogloEaves.scale.set(1.1, 1, 0.95);
-    jogloEaves.position.y = 2.75;
+    jogloEaves.scale.set(1.12, 1, 0.92);
+    jogloEaves.position.set(0, 4.18, -0.32);
     jogloEaves.castShadow = true;
-    const jogloCrown = new THREE.Mesh(new THREE.ConeGeometry(1.35, 1.05, 4), roofDarkMat);
+
+    const jogloCrown = new THREE.Mesh(new THREE.ConeGeometry(1.62, 1.22, 4), roofDarkMat);
     jogloCrown.rotation.y = Math.PI / 4;
-    jogloCrown.position.y = 3.45;
+    jogloCrown.position.set(0, 5.02, -0.32);
     jogloCrown.castShadow = true;
-    pendopo.add(jogloEaves, jogloCrown);
 
-    // Celebratory side table with golden Tumpeng / Celebration Cake
-    const table = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.36, 0.48, 12), darkWoodMat);
-    table.position.set(-1.05, 0.56, 0.2);
-    const cakeTier = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 0.16, 14), creamMat);
-    cakeTier.position.set(-1.05, 0.88, 0.2);
-    const tumpengCone = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.34, 14), goldMat);
-    tumpengCone.position.set(-1.05, 1.12, 0.2);
-    pendopo.add(table, cakeTier, tumpengCone);
+    const mustaka = new THREE.Mesh(new THREE.OctahedronGeometry(0.16, 0), goldMat);
+    mustaka.scale.set(0.8, 1.5, 0.8);
+    mustaka.position.set(0, 5.72, -0.32);
+    pendopo.add(tumpang1, tumpang2, jogloEaves, jogloCrown, mustaka);
 
-    // Two happy chibi celebrants standing inside the Pendopo facing guests
-    const bride = buildChibiCharacter({
-      gender: "cewek",
-      outfitColor: "#f3e8da",
-      accentColor: "#d99e4c",
-      hatType: "floral",
+    // Glowing Brass Lampu Robyong Chandelier inside ceiling
+    const robyongGroup = new THREE.Group();
+    robyongGroup.position.set(0, 3.38, 0.1);
+    const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.35, 6), goldMat);
+    chain.position.y = 0.2;
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.025, 8, 18), goldMat);
+    ring.rotation.x = Math.PI / 2;
+    robyongGroup.add(chain, ring);
+    for (let l = 0; l < 4; l++) {
+      const a = (l / 4) * Math.PI * 2;
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), stringLightMat);
+      bulb.position.set(Math.cos(a) * 0.25, -0.04, Math.sin(a) * 0.25);
+      robyongGroup.add(bulb);
+    }
+    pendopo.add(robyongGroup);
+
+    // Ornate Carved Gebyok Backdrop + Bridal Floral Arch behind Pelaminan
+    const gebyok = new THREE.Mesh(new THREE.BoxGeometry(2.95, 1.98, 0.14), gebyokMat);
+    gebyok.position.set(0, 1.42, -0.55);
+    gebyok.castShadow = true;
+    pendopo.add(gebyok);
+
+    // Two Carved Pelaminan Chairs flanking backdrop
+    [-0.95, 0.95].forEach((cx) => {
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.12, 0.42), ivorySilkMat);
+      seat.position.set(cx, 0.65, -0.05);
+      const back = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.62, 0.1), darkWoodMat);
+      back.position.set(cx, 0.92, -0.23);
+      const cushion = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.48, 0.06), goldMat);
+      cushion.position.set(cx, 0.92, -0.17);
+      pendopo.add(seat, back, cushion);
     });
-    bride.baseY = 0.32;
-    bride.group.position.set(0.45, 0.32, 0.1);
-    bride.group.rotation.y = -0.35;
 
-    const groom = buildChibiCharacter({
-      gender: "cowok",
-      outfitColor: "#2d6a4f",
-      accentColor: "#e6c17a",
-      hatType: "none",
+    // Lush Floral Arch framing the Gebyok & Couple
+    const roseBlushMat = new THREE.MeshStandardMaterial({ color: "#f2a7b5", roughness: 0.55 });
+    for (let i = 0; i <= 14; i++) {
+      const ang = (i / 14) * Math.PI;
+      const fx = Math.cos(ang) * 1.48;
+      const fy = 0.85 + Math.sin(ang) * 1.55;
+      const cluster = new THREE.Group();
+      cluster.position.set(fx, fy, -0.38);
+      const leaf = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16, 0), foliageDarkMat);
+      const bloom1 = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.11, 0),
+        i % 3 === 0 ? roseBlushMat : ivorySilkMat,
+      );
+      bloom1.position.set(0.05, 0.04, 0.08);
+      const bloom2 = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.08, 0),
+        i % 2 === 0 ? goldMat : roseBlushMat,
+      );
+      bloom2.position.set(-0.07, -0.04, 0.07);
+      cluster.add(leaf, bloom1, bloom2);
+      pendopo.add(cluster);
+    }
+
+    // Standing Floral Urns flanking the front steps
+    [-2.05, 2.05].forEach((ux) => {
+      const urn = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.14, 0.46, 12), goldMat);
+      urn.position.set(ux, 0.63, 1.72);
+      const flowers = new THREE.Mesh(new THREE.DodecahedronGeometry(0.28, 0), ivorySilkMat);
+      flowers.position.set(ux, 0.96, 1.72);
+      const roseTop = new THREE.Mesh(new THREE.DodecahedronGeometry(0.18, 0), roseBlushMat);
+      roseTop.position.set(ux, 1.08, 1.74);
+      pendopo.add(urn, flowers, roseTop);
     });
-    groom.baseY = 0.32;
-    groom.group.position.set(-0.22, 0.32, -0.05);
-    groom.group.rotation.y = -0.25;
 
-    celebrantRigs.push(bride, groom);
-    pendopo.add(bride.group, groom.group);
+    // Celebratory side table with Wedding Cake / Tumpeng inside left wing
+    const sideTable = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.3, 0.45, 12), darkWoodMat);
+    sideTable.position.set(-1.55, 0.62, 0.45);
+    const cake1 = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.28, 0.16, 14), ivorySilkMat);
+    cake1.position.set(-1.55, 0.92, 0.45);
+    const cake2 = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.17, 0.19, 0.16, 14),
+      payload.mode === "wedding" ? ivorySilkMat : goldMat,
+    );
+    cake2.position.set(-1.55, 1.08, 0.45);
+    pendopo.add(sideTable, cake1, cake2);
+
+    // Mount Hero Bride & Groom cleanly at open front of Pelaminan facing +Z!
+    weddingCouple.group.position.set(0, 0, 0.68);
+    weddingCouple.group.scale.setScalar(1.16);
+    pendopo.add(weddingCouple.group);
+
+    // Twin tall Penjor arches symmetrically flanking the Pendopo steps
+    addPenjor(-2.55, 2.05, 0.25, 1.06, pendopo);
+    addPenjor(2.55, 2.05, -0.25, 1.06, pendopo);
 
     worldGroup.add(pendopo);
     stationMeshes.acara = pendopo;
   }
 
-  // Station 3: UCAPAN & RSVP / BALE KUIS (x: -2.0, z: 1.5) — Woven Mat + Writing Desk + Greeter
+  // Station 3: UCAPAN & RSVP / BUKU TAMU (x: -1.9, z: 1.6)
   {
     const deskArea = new THREE.Group();
-    deskArea.position.set(-2.0, 0, 1.5);
+    deskArea.position.set(-1.9, 0, 1.6);
 
     const rug = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.15, 1.15, 0.03, 18),
-      new THREE.MeshStandardMaterial({ color: "#e8d3ae", roughness: 0.9 }),
+      new THREE.CylinderGeometry(1.18, 1.18, 0.03, 20),
+      new THREE.MeshStandardMaterial({ color: "#e8d6b7", roughness: 0.9 }),
     );
     rug.position.y = 0.02;
     deskArea.add(rug);
 
-    const deskTop = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.12, 0.72), woodMat);
+    const tableCloth = new THREE.Mesh(new THREE.BoxGeometry(1.32, 0.56, 0.78), ivorySilkMat);
+    tableCloth.position.y = 0.32;
+    tableCloth.castShadow = true;
+    const deskTop = new THREE.Mesh(new THREE.BoxGeometry(1.36, 0.08, 0.82), woodMat);
     deskTop.position.y = 0.62;
     deskTop.castShadow = true;
-    deskArea.add(deskTop);
-
-    [-0.52, 0.52].forEach((lx) => {
-      [-0.28, 0.28].forEach((lz) => {
-        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.6, 6), darkWoodMat);
-        leg.position.set(lx, 0.3, lz);
-        deskArea.add(leg);
-      });
-    });
-
-    const book = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.05, 0.32), creamMat);
-    book.position.set(0, 0.71, 0.04);
-    deskArea.add(book);
+    const book = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.05, 0.34), creamMat);
+    book.position.set(-0.15, 0.69, 0.06);
+    const vase = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.06, 0.2, 10), goldMat);
+    vase.position.set(0.36, 0.76, -0.05);
+    const floral = new THREE.Mesh(new THREE.DodecahedronGeometry(0.14, 0), petalPinkMat);
+    floral.position.set(0.36, 0.92, -0.05);
+    deskArea.add(tableCloth, deskTop, book, vase, floral);
 
     const greeter = buildChibiCharacter({
       gender: "cewek",
@@ -809,7 +1268,7 @@ export function buildVillageEnvironment(
       hatType: "floral",
     });
     greeter.baseY = 0.04;
-    greeter.group.position.set(0, 0.04, -0.58);
+    greeter.group.position.set(0, 0.04, -0.62);
     celebrantRigs.push(greeter);
     deskArea.add(greeter.group);
 
@@ -817,15 +1276,15 @@ export function buildVillageEnvironment(
     stationMeshes.ucapan = deskArea;
   }
 
-  // Station 4: KADO / MEJA HANTARAN (x: 1.8, z: -2.4) — Festive Gift Table + Floating Balloons
+  // Station 4: KADO / MEJA HANTARAN (x: 1.2, z: -2.2)
   {
     const giftArea = new THREE.Group();
-    giftArea.position.set(1.8, 0, -2.4);
+    giftArea.position.set(1.2, 0, -2.2);
 
-    const tableTop = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.1, 0.95), woodMat);
+    const tableTop = new THREE.Mesh(new THREE.BoxGeometry(1.68, 0.1, 0.96), woodMat);
     tableTop.position.y = 0.58;
     tableTop.castShadow = true;
-    const runner = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.11, 1.02), terracottaMat);
+    const runner = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.11, 1.04), runnerBatikMat);
     runner.position.y = 0.585;
     giftArea.add(tableTop, runner);
 
@@ -837,7 +1296,7 @@ export function buildVillageEnvironment(
       });
     });
 
-    const boxColors = ["#2d6a4f", "#d4a359", "#c45b3a"];
+    const boxColors = ["#2d6a4f", "#d4a359", "#f4ebe0"];
     [
       { x: -0.45, y: 0.77, z: 0, s: 0.28, c: boxColors[0] },
       { x: 0.05, y: 0.82, z: -0.08, s: 0.36, c: boxColors[1] },
@@ -845,151 +1304,255 @@ export function buildVillageEnvironment(
     ].forEach((b) => {
       const box = new THREE.Mesh(
         new THREE.BoxGeometry(b.s, b.s, b.s),
-        new THREE.MeshStandardMaterial({ color: b.c, roughness: 0.65 }),
+        new THREE.MeshStandardMaterial({ color: b.c, roughness: 0.6 }),
       );
       box.position.set(b.x, b.y, b.z);
       box.castShadow = true;
-      giftArea.add(box);
+      const ribbon = new THREE.Mesh(new THREE.BoxGeometry(b.s + 0.02, 0.04, b.s + 0.02), goldMat);
+      ribbon.position.set(b.x, b.y + b.s * 0.15, b.z);
+      giftArea.add(box, ribbon);
     });
 
-    // Gentle floating pastel balloons tied to table corner
-    const balloonColors = ["#e88a93", "#e8c07c", "#74b388"];
-    balloonColors.forEach((hex, idx) => {
-      const bx = 0.92 + idx * 0.18;
-      const by = 1.65 + idx * 0.22;
-      const bz = -0.25 + idx * 0.2;
-      const balloon = new THREE.Mesh(
-        new THREE.SphereGeometry(0.19, 12, 10),
-        new THREE.MeshStandardMaterial({ color: hex, roughness: 0.38 }),
-      );
-      balloon.scale.set(1, 1.18, 1);
-      balloon.position.set(bx, by, bz);
-      giftArea.add(balloon);
-      balloons.push({ mesh: balloon, baseY: by, phase: idx * 1.4 });
-    });
+    // Floating pastel balloons only for Kado anniversary mode; floral centerpiece for Wedding mode
+    if (payload.mode === "kado") {
+      const balloonColors = ["#e88a93", "#e8c07c", "#74b388"];
+      balloonColors.forEach((hex, idx) => {
+        const bx = 0.92 + idx * 0.18;
+        const by = 1.65 + idx * 0.22;
+        const bz = -0.25 + idx * 0.2;
+        const balloon = new THREE.Mesh(
+          new THREE.SphereGeometry(0.19, 12, 10),
+          new THREE.MeshStandardMaterial({ color: hex, roughness: 0.38 }),
+        );
+        balloon.scale.set(1, 1.18, 1);
+        balloon.position.set(bx, by, bz);
+        giftArea.add(balloon);
+        balloons.push({ mesh: balloon, baseY: by, phase: idx * 1.4 });
+      });
+    } else {
+      const centerpiece = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16, 0), ivorySilkMat);
+      centerpiece.position.set(0.55, 0.94, -0.2);
+      giftArea.add(centerpiece);
+    }
 
     worldGroup.add(giftArea);
     stationMeshes.kado = giftArea;
   }
 
-  // Station 5: CERITA / PAPAN CERITA (x: -3.2, z: -2.8) — Carved Wooden Storyboard
+  // Station 5: CERITA / KISAH KAMI (x: -2.1, z: -3.65, facing +Z down western garden path)
   {
     const board = new THREE.Group();
-    board.position.set(-3.2, 0, -2.8);
-    board.rotation.y = 0.35;
+    board.position.set(-2.1, 0, -3.65);
+    board.rotation.y = 0;
 
-    [-0.65, 0.65].forEach((px) => {
-      const p = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 1.65, 7), darkWoodMat);
-      p.position.set(px, 0.82, 0);
+    const plinthBase = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.18, 0.75), stoneTileMat);
+    plinthBase.position.y = 0.09;
+    plinthBase.receiveShadow = true;
+    board.add(plinthBase);
+
+    [-0.86, 0.86].forEach((px) => {
+      const umpak = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.14, 0.24), stoneMat);
+      umpak.position.set(px, 0.22, 0);
+      const p = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.72, 0.14), darkWoodMat);
+      p.position.set(px, 1.12, 0);
       p.castShadow = true;
-      board.add(p);
+      const brace = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.38, 0.08), woodMat);
+      brace.position.set(px > 0 ? px - 0.14 : px + 0.14, 1.78, 0);
+      brace.rotation.z = px > 0 ? 0.72 : -0.72;
+      board.add(umpak, p, brace);
     });
-    const panel = new THREE.Mesh(new THREE.BoxGeometry(1.42, 0.96, 0.1), creamMat);
-    panel.position.y = 1.12;
-    panel.castShadow = true;
-    const roof = new THREE.Mesh(new THREE.BoxGeometry(1.62, 0.14, 0.42), terracottaMat);
-    roof.position.y = 1.68;
-    board.add(panel, roof);
 
-    // Pinned mini colorful cards
-    ["#e8a87c", "#74b388", "#e88a93"].forEach((hex, idx) => {
-      const mini = new THREE.Mesh(
-        new THREE.BoxGeometry(0.32, 0.42, 0.03),
-        new THREE.MeshStandardMaterial({ color: hex, roughness: 0.7 }),
-      );
-      mini.position.set(-0.38 + idx * 0.38, 1.12, 0.06);
-      mini.rotation.z = (idx - 1) * 0.07;
-      board.add(mini);
+    // Recessed gold-framed showcase panel with Storyboard canvas art
+    const frameBack = new THREE.Mesh(new THREE.BoxGeometry(1.66, 1.18, 0.1), darkWoodMat);
+    frameBack.position.set(0, 1.24, 0);
+    frameBack.castShadow = true;
+    const goldTrim = new THREE.Mesh(new THREE.BoxGeometry(1.56, 1.08, 0.12), goldMat);
+    goldTrim.position.set(0, 1.24, 0);
+    const artMat = new THREE.MeshStandardMaterial({ map: storyBoardTex, roughness: 0.55 });
+    const artFront = new THREE.Mesh(new THREE.PlaneGeometry(1.46, 1.0), artMat);
+    artFront.position.set(0, 1.24, 0.066);
+    board.add(frameBack, goldTrim, artFront);
+
+    // Pitched Genteng shelter canopy roof + ridge cap
+    const roofLeft = new THREE.Mesh(new THREE.BoxGeometry(2.18, 0.1, 0.54), terracottaMat);
+    roofLeft.position.set(0, 2.08, 0.18);
+    roofLeft.rotation.x = 0.32;
+    roofLeft.castShadow = true;
+    const roofRight = new THREE.Mesh(new THREE.BoxGeometry(2.18, 0.1, 0.54), terracottaMat);
+    roofRight.position.set(0, 2.08, -0.18);
+    roofRight.rotation.x = -0.32;
+    roofRight.castShadow = true;
+    const ridgeCap = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 2.24, 8), roofDarkMat);
+    ridgeCap.rotation.z = Math.PI / 2;
+    ridgeCap.position.set(0, 2.18, 0);
+    board.add(roofLeft, roofRight, ridgeCap);
+
+    // Hanging warm mini lantern on right eave
+    const lShadeMat = new THREE.MeshStandardMaterial({
+      color: "#fff3cc",
+      emissive: new THREE.Color("#ffb64d"),
+      emissiveIntensity: 0.8,
+      roughness: 0.4,
     });
+    lanternShadeMats.push(lShadeMat);
+    const lanternCord = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.22, 6), darkWoodMat);
+    lanternCord.position.set(0.95, 1.88, 0.28);
+    const lanternLamp = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.18, 0.15), lShadeMat);
+    lanternLamp.position.set(0.95, 1.72, 0.28);
+    board.add(lanternCord, lanternLamp);
+
+    // Low carved planter box with blooms
+    const planter = new THREE.Mesh(new THREE.BoxGeometry(1.36, 0.24, 0.26), woodMat);
+    planter.position.set(0, 0.28, 0.24);
+    board.add(planter);
+    for (let f = -3; f <= 3; f++) {
+      const bloom = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.08, 0),
+        f % 2 === 0 ? petalPinkMat : ivorySilkMat,
+      );
+      bloom.position.set(f * 0.18, 0.44, 0.25);
+      board.add(bloom);
+    }
 
     worldGroup.add(board);
     stationMeshes.cerita = board;
   }
 
-  // Station 6: GALERI / PIGURA GALERI (x: 6.8, z: 2.6) — Bamboo Easel Gallery Frame
+  // Station 6: GALERI / GALERI MOMEN (x: 6.4, z: 0.55, off road z=2.2, facing straight +Z toward main road)
   {
-    const easel = new THREE.Group();
-    easel.position.set(6.8, 0, 2.6);
-    easel.rotation.y = -0.45;
+    const gallery = new THREE.Group();
+    gallery.position.set(6.4, 0, 0.55);
+    gallery.rotation.y = 0;
 
-    [-0.48, 0.48].forEach((px) => {
-      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 1.5, 7), bambooMat);
-      leg.position.set(px, 0.75, 0);
+    // Stepped stone terrace & stepping stone pad connecting smoothly southward to the main road
+    const plinth = new THREE.Mesh(new THREE.BoxGeometry(2.35, 0.2, 0.9), stoneTileMat);
+    plinth.position.y = 0.1;
+    plinth.receiveShadow = true;
+    plinth.castShadow = true;
+    const stepPad = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.08, 0.65), stoneTileMat);
+    stepPad.position.set(0, 0.04, 0.72);
+    stepPad.receiveShadow = true;
+    gallery.add(plinth, stepPad);
+
+    // Twin chamfered dark teak pergola pillars with gold collars & angled side braces
+    [-0.95, 0.95].forEach((px) => {
+      const umpak = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.16, 0.26), stoneMat);
+      umpak.position.set(px, 0.24, 0);
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.15, 1.85, 0.15), darkWoodMat);
+      leg.position.set(px, 1.22, 0);
       leg.castShadow = true;
-      easel.add(leg);
+      const collar = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.07, 0.19), goldMat);
+      collar.position.set(px, 1.85, 0);
+      const brace = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.42, 0.08), woodMat);
+      brace.position.set(px > 0 ? px - 0.16 : px + 0.16, 1.92, 0);
+      brace.rotation.z = px > 0 ? 0.75 : -0.75;
+      gallery.add(umpak, leg, collar, brace);
     });
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(1.36, 0.98, 0.1), darkWoodMat);
-    frame.position.y = 1.1;
-    frame.castShadow = true;
-    const canvasInner = new THREE.Mesh(
-      new THREE.BoxGeometry(1.16, 0.78, 0.12),
-      new THREE.MeshStandardMaterial({ color: "#72a67a", roughness: 0.65 }),
-    );
-    canvasInner.position.y = 1.1;
-    const sunDot = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 8), goldMat);
-    sunDot.position.set(0.28, 1.28, 0.06);
-    easel.add(frame, canvasInner, sunDot);
 
-    worldGroup.add(easel);
-    stationMeshes.galeri = easel;
+    // Double-framed teak + antique gold gallery display with high-detail Polaroid canvas art
+    const frameBack = new THREE.Mesh(new THREE.BoxGeometry(1.76, 1.28, 0.11), darkWoodMat);
+    frameBack.position.set(0, 1.32, 0);
+    frameBack.castShadow = true;
+    const frameGold = new THREE.Mesh(new THREE.BoxGeometry(1.66, 1.18, 0.13), goldMat);
+    frameGold.position.set(0, 1.32, 0);
+    const artMat = new THREE.MeshStandardMaterial({ map: galleryBoardTex, roughness: 0.5 });
+    const artFront = new THREE.Mesh(new THREE.PlaneGeometry(1.56, 1.08), artMat);
+    artFront.position.set(0, 1.32, 0.072);
+    gallery.add(frameBack, frameGold, artFront);
+
+    // Architectural pitched Genteng canopy roof + gilded crown finial
+    const roofFront = new THREE.Mesh(new THREE.BoxGeometry(2.38, 0.1, 0.62), terracottaMat);
+    roofFront.position.set(0, 2.24, 0.21);
+    roofFront.rotation.x = 0.34;
+    roofFront.castShadow = true;
+    const roofBack = new THREE.Mesh(new THREE.BoxGeometry(2.38, 0.1, 0.62), terracottaMat);
+    roofBack.position.set(0, 2.24, -0.21);
+    roofBack.rotation.x = -0.34;
+    roofBack.castShadow = true;
+    const ridge = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 2.44, 8), roofDarkMat);
+    ridge.rotation.z = Math.PI / 2;
+    ridge.position.set(0, 2.36, 0);
+    const finial = new THREE.Mesh(new THREE.OctahedronGeometry(0.11, 0), goldMat);
+    finial.scale.set(0.8, 1.4, 0.8);
+    finial.position.set(0, 2.48, 0);
+    gallery.add(roofFront, roofBack, ridge, finial);
+
+    // 3 Warm under-eave spotlights illuminating the gallery art
+    [-0.52, 0, 0.52].forEach((bx) => {
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), stringLightMat);
+      bulb.position.set(bx, 2.08, 0.32);
+      gallery.add(bulb);
+    });
+
+    // Floral rose & greenery garland draped across the top front beam
+    for (let i = -4; i <= 4; i++) {
+      const leaf = new THREE.Mesh(new THREE.DodecahedronGeometry(0.09, 0), foliageDarkMat);
+      leaf.position.set(i * 0.2, 2.02 - Math.cos(i * 0.35) * 0.05, 0.12);
+      const bloom = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.075, 0),
+        i % 2 === 0 ? petalPinkMat : ivorySilkMat,
+      );
+      bloom.position.set(i * 0.2, 2.03 - Math.cos(i * 0.35) * 0.05, 0.18);
+      gallery.add(leaf, bloom);
+    }
+
+    // Twin Terracotta Potted Plants flanking the stone plinth
+    [-1.12, 1.12].forEach((px) => {
+      const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.1, 0.26, 10), roofDarkMat);
+      pot.position.set(px, 0.33, 0.16);
+      const shrub = new THREE.Mesh(new THREE.DodecahedronGeometry(0.19, 0), foliageMidMat);
+      shrub.position.set(px, 0.55, 0.16);
+      const flower = new THREE.Mesh(new THREE.DodecahedronGeometry(0.08, 0), petalPinkMat);
+      flower.position.set(px, 0.68, 0.2);
+      gallery.add(pot, shrub, flower);
+    });
+
+    worldGroup.add(gallery);
+    stationMeshes.galeri = gallery;
   }
 
-  // ==========================================================
-  // 10. LIVING INDONESIAN VILLAGE FAUNA (Ayam, Domba, Bebek)
-  // ==========================================================
-  const addAnimal = (
-    kind: AnimalHandle["kind"],
-    homeX: number,
-    homeZ: number,
-    phase: number,
-    radius = 0.7,
-  ) => {
-    const g = new THREE.Group();
-    if (kind === "domba") {
-      const woolMat = new THREE.MeshStandardMaterial({ color: "#f6efe2", roughness: 0.95 });
-      const body = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 10), woolMat);
-      body.scale.set(1.1, 0.95, 1.35);
-      body.position.y = 0.28;
-      body.castShadow = true;
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.15, 10, 8), barkMat);
-      head.position.set(0, 0.35, 0.32);
-      g.add(body, head);
-    } else if (kind === "ayam") {
-      const feather = new THREE.MeshStandardMaterial({ color: "#c96f38", roughness: 0.8 });
-      const body = new THREE.Mesh(new THREE.SphereGeometry(0.14, 10, 8), feather);
-      body.scale.set(0.9, 0.85, 1.2);
-      body.position.y = 0.14;
-      const comb = new THREE.Mesh(new THREE.SphereGeometry(0.045, 6, 6), terracottaMat);
-      comb.position.set(0, 0.29, 0.12);
-      g.add(body, comb);
-    } else {
-      const duckMat = new THREE.MeshStandardMaterial({ color: "#e5d5b3", roughness: 0.8 });
-      const body = new THREE.Mesh(new THREE.SphereGeometry(0.15, 10, 8), duckMat);
-      body.scale.set(0.9, 0.78, 1.3);
-      body.position.y = 0.12;
-      const bill = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.03, 0.09), goldMat);
-      bill.position.set(0, 0.21, 0.22);
-      const head = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), duckMat);
-      head.position.set(0, 0.24, 0.14);
-      g.add(body, head, bill);
-    }
-    g.position.set(homeX, 0, homeZ);
-    worldGroup.add(g);
-    animals.push({ group: g, kind, homeX, homeZ, phase, radius });
-  };
-
-  addAnimal("domba", -1.2, -4.4, 0, 0.8);
-  addAnimal("domba", 0.5, -4.6, 2.2, 0.65);
-  addAnimal("ayam", -8.8, 0.6, 0.5, 0.75);
-  addAnimal("ayam", -8.1, -0.5, 2.4, 0.6);
-  addAnimal("ayam", 4.6, 5.2, 4.1, 0.7);
-  addAnimal("bebek", -3.9, 5.2, 1.0, 0.5);
-  addAnimal("bebek", -3.8, -0.8, 3.2, 0.5);
+  // Tag every station subtree mesh with userData.stationId for raycast hover & click
+  Object.entries(stationMeshes).forEach(([id, root]) => {
+    root.traverse((obj) => {
+      obj.userData.stationId = id;
+    });
+  });
 
   // ==========================================================
-  // 11. DRIFTING KAMBOJA PETALS & TWINKLING KUNANG-KUNANG
+  // 10. DETAILED LIVING FAUNA (Domba, Ayam, Bebek & Kupu-kupu)
   // ==========================================================
-  const petalCount = 42;
+  const faunaRoster = [
+    buildDetailedSheep(-1.2, -5.0, 0, 0.75),
+    buildDetailedSheep(0.5, -5.1, 2.2, 0.6),
+    buildDetailedChicken(-8.8, 0.6, 0.5, 0.75),
+    buildDetailedChicken(-8.1, -0.5, 2.4, 0.6),
+    buildDetailedChicken(4.6, 5.4, 4.1, 0.7),
+    buildDetailedDuck(-3.9, 5.2, 1.0, 0.5),
+    buildDetailedDuck(-3.8, -0.8, 3.2, 0.5),
+  ];
+  faunaRoster.forEach((item) => {
+    worldGroup.add(item.group);
+    animals.push(item);
+  });
+
+  // Fluttering Garden Butterflies near floral beds & wedding aisle
+  const butterflyConfigs = [
+    { color: "#f6d378", x: 1.6, y: 0.95, z: 1.35, phase: 0.2 },
+    { color: "#f5b0c1", x: 3.4, y: 1.05, z: -1.3, phase: 1.6 },
+    { color: "#a5d8e6", x: -6.0, y: 0.95, z: 3.3, phase: 3.1 },
+    { color: "#f7dfb6", x: 6.2, y: 1.1, z: 1.4, phase: 4.5 },
+    { color: "#eab6e3", x: -1.4, y: 1.0, z: -2.6, phase: 5.4 },
+  ];
+  butterflyConfigs.forEach((bc) => {
+    const bf = buildButterfly(bc.color, bc.x, bc.y, bc.z, bc.phase);
+    worldGroup.add(bf.group);
+    butterflies.push(bf);
+  });
+
+  // ==========================================================
+  // 11. DRIFTING BLOSSOM PETALS & TWINKLING FIREFLIES
+  // ==========================================================
+  const petalCount = 48;
   const petalPositions = new Float32Array(petalCount * 3);
   const petalVelocities = new Float32Array(petalCount * 3);
   for (let i = 0; i < petalCount; i++) {
@@ -1013,13 +1576,13 @@ export function buildVillageEnvironment(
   const petalPoints = new THREE.Points(petalGeo, petalMat);
   worldGroup.add(petalPoints);
 
-  const fireflyCount = 68;
+  const fireflyCount = 72;
   const ffPositions = new Float32Array(fireflyCount * 3);
   const ffBasePositions = new Float32Array(fireflyCount * 3);
   const ffPhases = new Float32Array(fireflyCount);
   for (let i = 0; i < fireflyCount; i++) {
     const x = -9 + Math.random() * 19;
-    const y = 0.45 + Math.random() * 2.1;
+    const y = 0.45 + Math.random() * 2.2;
     const z = -6.5 + Math.random() * 14.5;
     ffPositions[i * 3] = x;
     ffPositions[i * 3 + 1] = y;
@@ -1044,6 +1607,7 @@ export function buildVillageEnvironment(
   worldGroup.add(ffPoints);
 
   const disposeExtras = () => {
+    weddingCouple.dispose();
     [
       grassTex,
       dirtTex,
@@ -1052,19 +1616,36 @@ export function buildVillageEnvironment(
       woodTex,
       darkWoodTex,
       bambooTex,
+      roofTileTex,
+      stoneTileTex,
+      runnerBatikTex,
+      gebyokTex,
+      galleryBoardTex,
+      storyBoardTex,
       glowTex,
       circleTex,
       signTex,
+      skyTextures.pagi,
+      skyTextures.sore,
+      skyTextures.malam,
     ].forEach((t) => t.dispose());
   };
 
   return {
     waterTexture,
     sawahTexture,
+    skyDomeMat,
+    skyTextures,
+    sunDisc,
+    clouds,
+    waterWheel,
+    weddingCouple,
+    stringLightMat,
     gateDoors: { left: leftGateDoor, right: rightGateDoor },
     swaying,
     koiFish,
     animals,
+    butterflies,
     balloons,
     lanternShadeMats,
     lanternGlowMeshes,

@@ -31,6 +31,140 @@ export function ThemeArtwork({ theme, compact = false }: ThemeArtworkProps) {
       aria-hidden="true"
     >
       {/* Subtle geometric backdrop tailored by archetype */}
+      {theme.demoArchetype === "celestial-3d-wedding" && (
+        <div className="relative flex h-full flex-col justify-between overflow-hidden bg-[#0D132B] p-4 text-[#FAF6EE]">
+          <img
+            src="/themes/istana-awan/card-cover.jpg"
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(8,13,36,0.22) 0%, rgba(8,13,36,0.12) 45%, rgba(8,13,36,0.88) 100%)",
+            }}
+          />
+
+          {/* Keep top-left clear for ThemeCard outer badge */}
+          <div className="relative z-10 flex items-center justify-end">
+            <span className="rounded-full border border-[#EFC86E]/45 bg-[#0D132B]/78 px-2.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-[#F7DC94] backdrop-blur-md">
+              3D · 360°
+            </span>
+          </div>
+
+          <div className="relative z-10 mt-auto rounded-2xl border border-[#EFC86E]/35 bg-[#0D132B]/76 px-3.5 py-3 text-center backdrop-blur-md">
+            <p className="font-mono text-[9.5px] font-semibold tracking-[0.2em] text-[#EFC86E] uppercase">
+              Undangan 3D Fantasy
+            </p>
+            <p className={`mt-1 text-lg leading-tight italic text-[#FAF6EE] ${fontClass}`}>
+              Raka &amp; Nadya
+            </p>
+            <p className="mt-1 text-[10.5px] text-[#CBD6F6]">
+              Istana Awan · Bintang Doa
+            </p>
+          </div>
+        </div>
+      )}
+
+      {theme.demoArchetype === "gacha-struk" && (
+        <div
+          className="relative flex h-full flex-col justify-between overflow-hidden p-4 text-[#F6EFE2]"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 70% at 50% 25%, rgba(214,165,75,0.22) 0%, #1C1613 62%, #120E0C 100%)",
+          }}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="rounded-full border border-[#E8C16E]/45 bg-[#942217] px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-[#FFFAF3] uppercase">
+              Link Pribadi /k/
+            </span>
+            <span className="font-mono text-[10px] font-bold text-[#E8C16E]">
+              PIN · 360°
+            </span>
+          </div>
+
+          {/* Miniature Walnut & Lacquer Crimson Keepsake Machine + Peeking 35mm Film Photo */}
+          <div className="relative mx-auto flex w-full max-w-[206px] items-end justify-center pt-1">
+            {/* Tilted 35mm Film Polaroid behind right edge */}
+            <div className="absolute -right-2 bottom-2 z-0 w-[96px] rotate-6 rounded-lg border border-[#221914]/30 bg-[#FBF6EC] p-1.5 shadow-lg">
+              <img
+                src="/themes/kapsul-kenangan/coffee-rain.jpg"
+                alt=""
+                className="h-[58px] w-full rounded object-cover"
+              />
+              <p className="mt-1 truncate text-center font-hand text-[11px] leading-none text-[#211813]">
+                14 Feb 2025
+              </p>
+            </div>
+
+            <div className="relative z-10 flex w-[144px] flex-col items-center">
+              {/* Backlit Glass Dome */}
+              <div
+                className="relative flex h-[84px] w-[126px] items-end justify-center overflow-hidden rounded-t-[60px] border border-[#E8C16E]/45 px-2 pb-1.5 shadow-inner"
+                style={{
+                  background:
+                    "radial-gradient(circle at 45% 40%, #FAF3E6 0%, #DFCFB4 80%)",
+                }}
+              >
+                <div className="pointer-events-none absolute top-2 left-3 h-10 w-4 -rotate-12 rounded-full bg-white/55" />
+                <div className="grid grid-cols-3 gap-1">
+                  {[
+                    "#B83124",
+                    "#2D6A4F",
+                    "#D6A54B",
+                    "#325788",
+                    "#B83124",
+                    "#2D6A4F",
+                  ].map((col, i) => (
+                    <span
+                      key={i}
+                      className="relative block h-6 w-6 overflow-hidden rounded-full border border-[#221914]/65 shadow-xs"
+                    >
+                      <span
+                        className="block h-1/2 w-full"
+                        style={{ backgroundColor: col }}
+                      />
+                      <span className="block h-[2px] w-full bg-[#D6A54B]" />
+                      <span className="block h-1/2 w-full bg-[#FAF4E8]" />
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Lacquer Crimson & Brass Chassis */}
+              <div
+                className="relative -mt-0.5 flex w-[138px] items-center justify-between rounded-b-[16px] border border-[#E8C16E]/40 px-3 py-2.5 shadow-xl"
+                style={{
+                  background: "linear-gradient(180deg, #B83124 0%, #831B12 100%)",
+                }}
+              >
+                <div className="flex h-9 w-8 items-center justify-center rounded-md border border-[#E8C16E]/45 bg-[#1B130F]">
+                  <span className="block h-4 w-4 rounded-full bg-[#D6A54B]" />
+                </div>
+
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E8C16E] bg-[#F7EEDB] shadow-sm">
+                  <div className="h-2 w-7 rotate-12 rounded-full border border-[#7A5316] bg-[#E3B44E]" />
+                </div>
+
+                <div className="w-10 rounded-xs bg-[#FFFEF9] px-1 py-0.5 text-center shadow-sm">
+                  <p className="font-mono text-[6.5px] leading-none font-bold text-[#221914]">
+                    STRUK
+                  </p>
+                  <p className="mt-0.5 inline-block -rotate-6 border border-[#C8281D] px-0.5 font-mono text-[7px] leading-none font-bold text-[#C8281D]">
+                    LUNAS
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center font-mono text-[10px] tracking-tight text-[#DFCEB2]">
+            Segel Lilin · Foto 35mm · Struk 9:16
+          </div>
+        </div>
+      )}
+
       {(theme.demoArchetype === "desa-3d-wedding" || theme.demoArchetype === "desa-3d-kado") && (
         <div className="relative flex h-full flex-col justify-between overflow-hidden p-4">
           <img

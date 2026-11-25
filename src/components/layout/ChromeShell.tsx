@@ -8,9 +8,12 @@ import { FloatingWhatsApp } from "./FloatingWhatsApp";
 
 export function ChromeShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isDemoRoute = pathname.startsWith("/demo/");
+  const isImmersiveRoute =
+    pathname.startsWith("/demo/") ||
+    pathname.startsWith("/k/") ||
+    pathname.startsWith("/u/");
 
-  if (isDemoRoute) {
+  if (isImmersiveRoute) {
     return <>{children}</>;
   }
 

@@ -137,8 +137,9 @@ const LIGHTING_PRESETS: Record<DesaTimeOfDay, LightingPreset> = {
   },
 };
 
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+function smootherstep(t: number): number {
+  const x = THREE.MathUtils.clamp(t, 0, 1);
+  return x * x * x * (x * (x * 6 - 15) + 10);
 }
 
 function computeBridgeElevation(x: number, z: number): number {
@@ -258,6 +259,7 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
       applyLighting: (t: DesaTimeOfDay) => void;
       triggerNearest: () => void;
       resetPlayerToGate: () => void;
+      beginIntro: () => void;
     } | null>(null);
 
     const completeIntroNow = () => {
@@ -272,7 +274,11 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
 
     useImperativeHandle(ref, () => ({
       startDroneIntro() {
+        stateRef.current.orbitYawOffset = 0;
+        stateRef.current.orbitZoomScale = 1;
+        stateRef.current.focusTarget = null;
         actionsRef.current?.resetPlayerToGate();
+        actionsRef.current?.beginIntro();
         stateRef.current.introProgress = 0;
         stateRef.current.introActive = true;
         stateRef.current.introFinishedSent = false;
@@ -387,8 +393,8 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
       scene.add(sunLight);
 
       // 3 warm accent lights (Pendopo Pelaminan front, Plaza, Bridge Gapura)
-      const pendopoLight = new THREE.PointLight(0xffba66, 2.5, 12, 1.5);
-      pendopoLight.position.set(4.6, 2.6, -2.2);
+      const pendopoLight = new THREE.PointLight(0xffe1ad, 2.6, 12, 1.45);
+      pendopoLight.position.set(4.85, 2.55, -2.55);
       const plazaLight = new THREE.PointLight(0xffbc68, 1.8, 10, 1.6);
       plazaLight.position.set(1.5, 2.0, 2.1);
       const gateLight = new THREE.PointLight(0xffb662, 1.6, 9, 1.6);
@@ -503,7 +509,7 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
         pMat.opacity = preset.petalOpacity;
 
         const ptIntensity = presetKey === "malam" ? 3.2 : presetKey === "sore" ? 2.2 : 0.8;
-        basePendopoIntensity = ptIntensity * 1.15;
+        basePendopoIntensity = presetKey === "malam" ? 3.6 : presetKey === "sore" ? 2.65 : 1.55;
         pendopoLight.intensity = basePendopoIntensity;
         plazaLight.intensity = ptIntensity * 0.85;
         gateLight.intensity = ptIntensity * 0.8;
@@ -702,6 +708,7 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
         swapGender,
         applyLighting,
         resetPlayerToGate,
+        beginIntro: () => beginIntro(),
         triggerNearest() {
           const target = computeNearest();
           if (!target) return;
@@ -720,62 +727,77 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
         return asp < 0.85 ? 1.42 : asp < 1.1 ? 1.18 : 1.0;
       };
 
-      // Drone Overview Center (Cover phase)
+      // Drone Overview Center (Cover phase) aligned exactly to initial angle so Frame 1 has zero jump
       const droneCenter = new THREE.Vector3(0.6, 1.0, -1.0);
       const initPF = getPortraitFactor();
+      let coverOrbitAngle = Math.atan2(15.5, -16.5);
+      const baseCoverRadius = Math.hypot(-16.5, 15.5);
       camera.fov = 42;
       camera.updateProjectionMatrix();
       camera.position.set(
-        droneCenter.x - 16.5 * initPF,
-        14.2 * initPF,
-        droneCenter.z + 15.5 * initPF,
+        droneCenter.x + Math.cos(coverOrbitAngle) * baseCoverRadius * initPF,
+        13.8 * initPF,
+        droneCenter.z + Math.sin(coverOrbitAngle) * baseCoverRadius * initPF,
       );
       camera.lookAt(droneCenter);
       renderer.render(scene, camera);
 
       const camTarget = droneCenter.clone();
       const desiredCamPos = new THREE.Vector3();
+      const desiredLookTarget = new THREE.Vector3();
       const projVec = new THREE.Vector3();
 
-      // Cinematic Game-Style Drone Flyover Spline Curves (6.5s intro, cached per portraitFactor)
-      const buildIntroCurves = (pf: number) => {
-        const endPos = new THREE.Vector3(-8.8, 0.72, 2.2).addScaledVector(baseCamOffset, pf);
+      // Cinematic Game-Style Drone Flyover Spline Rig (7.4s centripetal glide + cinema gimbal damp)
+      const buildIntroRig = (
+        startPos: THREE.Vector3,
+        startTarget: THREE.Vector3,
+        startFov: number,
+        pf: number,
+      ) => {
+        const endTarget = new THREE.Vector3(-8.8, 0.78, 2.2);
+        const endPos = endTarget.clone().addScaledVector(baseCamOffset, pf);
+
         const posCurve = new THREE.CatmullRomCurve3(
           [
-            new THREE.Vector3(-14.0 * pf, 15.5 * pf, 16.5 * pf),
-            new THREE.Vector3(12.5 * pf, 11.0 * pf, 12.5 * pf),
-            new THREE.Vector3(2.4, 3.0, 0.5), // sweeps directly up the aisle toward Pendopo & Couple!
-            new THREE.Vector3(-5.0, 6.2, 7.8),
+            startPos.clone(),
+            new THREE.Vector3(-4.5 * pf, 13.8 * pf, 14.8 * pf),
+            new THREE.Vector3(10.2 * pf, 7.6 * pf, 6.8 * pf),
+            new THREE.Vector3(-1.8 * pf, 8.6 * pf, 12.2 * pf),
             endPos,
           ],
           false,
-          "catmullrom",
-          0.45,
+          "centripetal",
         );
         const lookCurve = new THREE.CatmullRomCurve3(
           [
-            new THREE.Vector3(0.5, 0.8, -1.5),
-            new THREE.Vector3(2.0, 1.0, -2.0),
-            new THREE.Vector3(5.4, 1.5, -3.05), // focuses Bride & Groom on Pelaminan
-            new THREE.Vector3(-5.2, 1.1, 2.2),
-            new THREE.Vector3(-8.8, 0.72, 2.2), // lands on player character
+            startTarget.clone(),
+            new THREE.Vector3(1.2, 1.1, -1.2),
+            new THREE.Vector3(5.4, 1.55, -3.1),
+            new THREE.Vector3(-4.6, 1.25, 2.1),
+            endTarget,
           ],
           false,
-          "catmullrom",
-          0.45,
+          "centripetal",
         );
-        return { posCurve, lookCurve };
+
+        return {
+          pf,
+          posCurve,
+          lookCurve,
+          endPos,
+          endTarget,
+          startPos: startPos.clone(),
+          startTarget: startTarget.clone(),
+          startFov,
+          gimbalPos: startPos.clone(),
+          gimbalTarget: startTarget.clone(),
+          gimbalFov: startFov,
+        };
       };
 
-      let cachedCurvesPf = -1;
-      let cachedCurves = buildIntroCurves(initPF);
-      cachedCurvesPf = initPF;
-      const getIntroCurves = (pf: number) => {
-        if (Math.abs(pf - cachedCurvesPf) > 0.01) {
-          cachedCurves = buildIntroCurves(pf);
-          cachedCurvesPf = pf;
-        }
-        return cachedCurves;
+      let introRig: ReturnType<typeof buildIntroRig> | null = null;
+      const beginIntro = () => {
+        introRig = buildIntroRig(camera.position, camTarget, camera.fov, getPortraitFactor());
       };
 
       callbacksRef.current.onLoadProgress(100);
@@ -864,16 +886,36 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
         }
         ffAttr.needsUpdate = true;
 
-        // 7. Hero Bride & Groom animation + reception greeter gentle wave
-        animateWeddingCouple(env.weddingCouple, dt, elapsed);
+        // 7. Hero Bride & Groom animation + proximity warmth reaction
+        const pendopoCloseness =
+          currentPhase === "intro"
+            ? 0.85
+            : THREE.MathUtils.clamp(
+                1 -
+                  Math.hypot(
+                    playerRig.group.position.x - 6.0,
+                    playerRig.group.position.z - -3.8,
+                  ) /
+                    5.5,
+                0,
+                1,
+              );
+        animateWeddingCouple(env.weddingCouple, dt, elapsed, pendopoCloseness);
         env.celebrantRigs.forEach((rig, idx) => {
           animateChibi(rig, 0, dt, elapsed + idx * 1.1);
           rig.rightArm.rotation.z = -0.35 + Math.sin(elapsed * 2.8 + idx) * 0.16;
         });
 
-        // 8. Gate doors swing open when entering world
+        // 8. Gate doors swing open gracefully on arrival & entering world
         if (stateRef.current.entering || currentPhase === "world") {
           stateRef.current.gateProgress = Math.min(1, stateRef.current.gateProgress + dt * 1.8);
+          const openAngle = stateRef.current.gateProgress * 1.35;
+          env.gateDoors.left.rotation.y = openAngle;
+          env.gateDoors.right.rotation.y = -openAngle;
+        } else if (currentPhase === "intro" && stateRef.current.introProgress >= 0.84) {
+          const preOpen =
+            THREE.MathUtils.smoothstep(stateRef.current.introProgress, 0.84, 1.0) * 0.65;
+          stateRef.current.gateProgress = Math.max(stateRef.current.gateProgress, preOpen);
           const openAngle = stateRef.current.gateProgress * 1.35;
           env.gateDoors.left.rotation.y = openAngle;
           env.gateDoors.right.rotation.y = -openAngle;
@@ -1051,7 +1093,7 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
                   : st.id === "galeri" || st.id === "cerita" || st.id === "kado" || st.id === "ucapan"
                     ? 1.35
                     : 0.95;
-              markerY = st.id === "acara" ? 5.5 : st.id === "galeri" ? 2.75 : st.id === "cerita" ? 2.5 : 1.75;
+              markerY = st.id === "acara" ? 6.1 : st.id === "galeri" ? 2.75 : st.id === "cerita" ? 2.5 : 1.75;
             }
           } else {
             const npc = npcInstances.find((n) => n.data.id === activeHighlight.id);
@@ -1073,7 +1115,7 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
           highlightGroup.visible = false;
         }
 
-        // 12. 4-State Camera System: Cover Drone Orbit -> Picker -> Intro Spline -> World Follow
+        // 12. 4-State Camera System: Cover Drone Orbit -> Picker -> Intro Gimbal -> World Follow
         const portraitFactor = getPortraitFactor();
 
         if (currentPhase === "loading" || currentPhase === "cover") {
@@ -1082,15 +1124,15 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
             camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 1 - Math.exp(-4 * dt));
             camera.updateProjectionMatrix();
           }
-          const orbitAngle = elapsed * 0.14 + Math.PI * 0.72;
-          const orbitRadius = 21.5 * portraitFactor;
+          coverOrbitAngle += dt * 0.11;
+          const orbitRadius = baseCoverRadius * portraitFactor;
           desiredCamPos.set(
-            droneCenter.x + Math.cos(orbitAngle) * orbitRadius,
-            13.8 * portraitFactor,
-            droneCenter.z + Math.sin(orbitAngle) * orbitRadius,
+            droneCenter.x + Math.cos(coverOrbitAngle) * orbitRadius,
+            13.8 * portraitFactor + Math.sin(coverOrbitAngle * 1.4) * 0.28,
+            droneCenter.z + Math.sin(coverOrbitAngle) * orbitRadius,
           );
-          camTarget.lerp(droneCenter, 1 - Math.exp(-3.5 * dt));
-          camera.position.lerp(desiredCamPos, 1 - Math.exp(-3.5 * dt));
+          camTarget.lerp(droneCenter, 1 - Math.exp(-4.5 * dt));
+          camera.position.lerp(desiredCamPos, 1 - Math.exp(-4.5 * dt));
         } else if (currentPhase === "picking") {
           const targetFov = 37;
           if (Math.abs(camera.fov - targetFov) > 0.05) {
@@ -1106,27 +1148,64 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
             pickTarget.z + baseCamOffset.z * portraitFactor * 1.18,
           );
           camera.position.lerp(desiredCamPos, 1 - Math.exp(-4 * dt));
-        } else if (currentPhase === "intro") {
-          if (!stateRef.current.introActive) {
+        } else if (currentPhase === "intro" && !stateRef.current.introFinishedSent) {
+          if (!stateRef.current.introActive || !introRig) {
             stateRef.current.introActive = true;
             stateRef.current.introProgress = 0;
+            beginIntro();
           }
-          stateRef.current.introProgress = Math.min(
-            1,
-            stateRef.current.introProgress + dt / 6.5,
-          );
-          const eased = easeInOutCubic(stateRef.current.introProgress);
-          const { posCurve, lookCurve } = getIntroCurves(portraitFactor);
-          posCurve.getPointAt(eased, desiredCamPos);
-          lookCurve.getPointAt(eased, camTarget);
-          camera.position.copy(desiredCamPos);
+          if (introRig && Math.abs(portraitFactor - introRig.pf) > 0.01) {
+            const rebuilt = buildIntroRig(
+              introRig.startPos,
+              introRig.startTarget,
+              introRig.startFov,
+              portraitFactor,
+            );
+            rebuilt.gimbalPos.copy(introRig.gimbalPos);
+            rebuilt.gimbalTarget.copy(introRig.gimbalTarget);
+            rebuilt.gimbalFov = introRig.gimbalFov;
+            introRig = rebuilt;
+          }
 
-          const targetFov = THREE.MathUtils.lerp(44, 33, eased);
-          camera.fov = targetFov;
-          camera.updateProjectionMatrix();
+          if (introRig) {
+            const safeDt = Math.min(dt, 0.033);
+            stateRef.current.introProgress = Math.min(
+              1,
+              stateRef.current.introProgress + safeDt / 7.4,
+            );
+            const p = stateRef.current.introProgress;
+            const u = smootherstep(p);
+            introRig.posCurve.getPoint(u, desiredCamPos);
+            introRig.lookCurve.getPoint(u, desiredLookTarget);
 
-          if (stateRef.current.introProgress >= 1) {
-            completeIntroNow();
+            const settleBlend = THREE.MathUtils.smoothstep(p, 0.78, 1.0);
+            const dampRate = THREE.MathUtils.lerp(4.8, 12.0, settleBlend);
+            const dampAlpha = 1 - Math.exp(-dampRate * safeDt);
+            introRig.gimbalPos.lerp(desiredCamPos, dampAlpha);
+            introRig.gimbalTarget.lerp(desiredLookTarget, dampAlpha);
+
+            if (p > 0.96) {
+              const lock = THREE.MathUtils.smoothstep(p, 0.96, 1.0);
+              introRig.gimbalPos.lerp(introRig.endPos, lock);
+              introRig.gimbalTarget.lerp(introRig.endTarget, lock);
+            }
+
+            camera.position.copy(introRig.gimbalPos);
+            camTarget.copy(introRig.gimbalTarget);
+
+            const guideFov =
+              THREE.MathUtils.lerp(introRig.startFov, 33, u) + Math.sin(u * Math.PI) * 4.5;
+            introRig.gimbalFov = THREE.MathUtils.lerp(introRig.gimbalFov, guideFov, dampAlpha);
+            if (Math.abs(camera.fov - introRig.gimbalFov) > 0.005) {
+              camera.fov = introRig.gimbalFov;
+              camera.updateProjectionMatrix();
+            }
+
+            if (p >= 1) {
+              camera.position.copy(introRig.endPos);
+              camTarget.copy(introRig.endTarget);
+              completeIntroNow();
+            }
           }
         } else {
           const targetFov = 33;
@@ -1181,7 +1260,7 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
                 activeHighlight?.kind === "station" && activeHighlight.id === st.id ? "true" : "false";
             }
             if (st.id === "acara") {
-              placeLabel(`st:${st.id}`, 6.0, 5.9, -3.8);
+              placeLabel(`st:${st.id}`, 6.0, 6.25, -3.8);
             } else if (st.id === "galeri") {
               placeLabel(`st:${st.id}`, 6.4, 2.85, 0.55);
             } else if (st.id === "cerita") {

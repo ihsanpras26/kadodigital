@@ -21,6 +21,36 @@ const DesaAsriExperience = dynamic(
     ),
   },
 );
+
+const GachaStrukExperience = dynamic(
+  () =>
+    import("./gacha-world/GachaStrukExperience").then(
+      (mod) => mod.GachaStrukExperience,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-[#F4ECE0] text-sm font-semibold text-[#221914]">
+        Menyiapkan mesin gacha &amp; printer struk...
+      </div>
+    ),
+  },
+);
+
+const CelestialWeddingExperience = dynamic(
+  () =>
+    import("./celestial-world/CelestialWeddingExperience").then(
+      (mod) => mod.CelestialWeddingExperience,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-[#080D24] text-sm font-semibold text-[#FAF6EE]">
+        Menyiapkan Istana Awan 3D...
+      </div>
+    ),
+  },
+);
 import { getDemoPayload } from "@/data/demoContent";
 import { isDarkHex } from "@/lib/color";
 import { EnvelopeCover } from "./modules/EnvelopeCover";
@@ -69,6 +99,14 @@ export function DemoExperienceClient({ theme }: DemoExperienceClientProps) {
         mode={theme.demoArchetype === "desa-3d-kado" ? "kado" : "wedding"}
       />
     );
+  }
+
+  if (theme.demoArchetype === "gacha-struk") {
+    return <GachaStrukExperience theme={theme} />;
+  }
+
+  if (theme.demoArchetype === "celestial-3d-wedding") {
+    return <CelestialWeddingExperience theme={theme} />;
   }
 
   const headingFontClass = FONT_MOOD[theme.typographyStyle];

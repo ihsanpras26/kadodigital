@@ -99,8 +99,42 @@ export const THEME_COLORS: {
 
 export const CATALOG_THEMES: ThemeItem[] = [
   // ==========================================
-  // LINI 1: KADO PERSONAL (7 TEMA FLAGSHIP)
+  // LINI 1: KADO PERSONAL (8 TEMA FLAGSHIP)
   // ==========================================
+  {
+    slug: "kapsul-kenangan",
+    name: "Kapsul Kenangan — Gacha & Struk",
+    line: "kado-personal",
+    subCategory: "Interaktif/Kuis",
+    tagline: "Mesin kapsul kenangan eksklusif bersegel lilin dengan link pribadi dan struk thermal 9:16.",
+    story:
+      "Dirancang untuk dibagikan langsung lewat link privat ke pasangan atau sahabat terdekat. Penerima membuka segel lilin dan PIN rahasia, menyeret koin kuningan ke slot, memutar tuas 360 derajat untuk menjatuhkan foto analog 35mm, kaset suara, kuis pribadi, dan kupon gores, lalu mencetak struk lunas siap simpan ke Story.",
+    palette: {
+      accent: "#B83124",
+      base: "#14100E",
+      soft: "#D6A54B",
+    },
+    colorTags: ["hitam", "maroon", "emas"],
+    recommendedPackages: ["Kejutan", "Signature"],
+    startingPrice: 129000,
+    mechanics: [
+      "Segel Lilin & PIN Rahasia",
+      "Drag Koin & Putar Tuas 360°",
+      "4 Kapsul Personal + Foto 35mm",
+      "Cetak Struk Poster 9:16 PNG",
+    ],
+    features: [
+      "Link Pribadi /k/ + PIN Rahasia",
+      "Segel Lilin & Putar Tuas 360°",
+      "Audio Kafe Lo-Fi & Foley",
+      "Ekspor Poster Story 9:16",
+    ],
+    demoArchetype: "gacha-struk",
+    typographyStyle: "editorial-serif",
+    isFeatured: true,
+    isNew: true,
+    badge: "Gacha & Struk",
+  },
   {
     slug: "saung-kenangan",
     name: "Saung Kenangan 3D",
@@ -339,8 +373,43 @@ export const CATALOG_THEMES: ThemeItem[] = [
   },
 
   // ==========================================
-  // LINI 2: WEDDING (11 TEMA — 6 GAYA TAB)
+  // LINI 2: WEDDING (12 TEMA — 6 GAYA TAB)
   // ==========================================
+  {
+    slug: "istana-awan",
+    name: "Istana Awan 3D",
+    line: "wedding",
+    subCategory: "Terbaru",
+    tagline:
+      "Undangan fantasi 3D di istana marmer melayang di atas lautan awan dengan lepas bintang doa interaktif.",
+    story:
+      "Dunia fantasi royal celestial tanpa karakter kaku: tamu disambut gerbang bintang bercahaya, menyusuri pijakan batu melayang di atas lautan awan, menjelajah kubah emas, kisah cinta, galeri prewedding, serta melepas bintang doa 3D ke langit malam.",
+    palette: {
+      accent: "#EFC86E",
+      base: "#0D132B",
+      soft: "#232F5C",
+    },
+    colorTags: ["emas", "hitam", "putih"],
+    recommendedPackages: ["Gold", "Platinum", "Diamond"],
+    startingPrice: 179000,
+    mechanics: [
+      "Istana Awan 3D Three.js",
+      "Drone Intro Sinematik",
+      "Lepas Bintang Doa 3D",
+      "Link Tamu Privat /u/",
+    ],
+    features: [
+      "3 Suasana: Malam / Senja / Aurora",
+      "Audio Harpa & Reverb Katedral",
+      "QR Check-in + RSVP + Amplop",
+      "Kartu Undangan Story 9:16",
+    ],
+    demoArchetype: "celestial-3d-wedding",
+    typographyStyle: "nocturne-classic",
+    isFeatured: true,
+    isNew: true,
+    badge: "3D Fantasy",
+  },
   {
     slug: "desa-asri",
     name: "Desa Asri 3D",

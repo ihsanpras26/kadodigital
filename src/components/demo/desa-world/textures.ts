@@ -526,7 +526,8 @@ export function createGebyokTexture(): THREE.CanvasTexture {
 
 export function createWeddingFaceTexture(
   role: "bride" | "groom",
-  skinHex = "#f5cfb2",
+  skinHex = "#f7d4b8",
+  expression: "open" | "blink" = "open",
 ): THREE.CanvasTexture {
   const size = 512;
   const canvas = document.createElement("canvas");
@@ -537,155 +538,181 @@ export function createWeddingFaceTexture(
   ctx.fillStyle = skinHex;
   ctx.fillRect(0, 0, size, size);
 
-  // Warm soft forehead and jawline contour shading
+  // Soft porcelain-warm radial face illumination
   const shadeGrad = ctx.createRadialGradient(
     size * 0.5,
     size * 0.52,
-    30,
+    24,
     size * 0.5,
     size * 0.52,
-    180,
+    185,
   );
-  shadeGrad.addColorStop(0, "rgba(255, 240, 228, 0.25)");
-  shadeGrad.addColorStop(1, "rgba(190, 125, 92, 0.14)");
+  shadeGrad.addColorStop(0, "rgba(255, 246, 236, 0.34)");
+  shadeGrad.addColorStop(1, "rgba(196, 130, 96, 0.14)");
   ctx.fillStyle = shadeGrad;
   ctx.fillRect(0, 0, size, size);
 
   const cx = size * 0.5;
-  const eyeY = size * 0.5;
-  const eyeDx = 30;
+  const eyeY = size * 0.51;
+  const eyeDx = 35;
 
-  // Authentic Javanese Paes hairline curves for Bride
+  // Crisp Javanese Paes Ageng curves high on forehead (leaving eyes open & luminous)
   if (role === "bride") {
-    ctx.fillStyle = "#1f1512";
-    // Center Gajahan peak
+    ctx.fillStyle = "#1b120f";
     ctx.beginPath();
-    ctx.moveTo(cx - 18, eyeY - 76);
-    ctx.quadraticCurveTo(cx, eyeY - 34, cx + 18, eyeY - 76);
+    ctx.moveTo(cx - 20, eyeY - 84);
+    ctx.quadraticCurveTo(cx, eyeY - 40, cx + 20, eyeY - 84);
     ctx.closePath();
     ctx.fill();
 
-    // Side Pengapit & Penitis curves
     [-1, 1].forEach((dir) => {
       ctx.beginPath();
-      ctx.moveTo(cx + dir * 24, eyeY - 72);
-      ctx.quadraticCurveTo(cx + dir * 32, eyeY - 46, cx + dir * 40, eyeY - 68);
+      ctx.moveTo(cx + dir * 26, eyeY - 80);
+      ctx.quadraticCurveTo(cx + dir * 35, eyeY - 52, cx + dir * 44, eyeY - 76);
       ctx.closePath();
       ctx.fill();
 
       ctx.beginPath();
-      ctx.moveTo(cx + dir * 48, eyeY - 62);
-      ctx.quadraticCurveTo(cx + dir * 60, eyeY - 36, cx + dir * 68, eyeY - 48);
+      ctx.moveTo(cx + dir * 52, eyeY - 70);
+      ctx.quadraticCurveTo(cx + dir * 64, eyeY - 44, cx + dir * 74, eyeY - 56);
       ctx.closePath();
       ctx.fill();
     });
 
-    // Delicate gold Prada outline along Paes
-    ctx.strokeStyle = "#e0b35a";
-    ctx.lineWidth = 2.2;
+    // Gold Prada outline along Gajahan & Pengapit
+    ctx.strokeStyle = "#e6b960";
+    ctx.lineWidth = 2.6;
     ctx.beginPath();
-    ctx.moveTo(cx - 18, eyeY - 76);
-    ctx.quadraticCurveTo(cx, eyeY - 34, cx + 18, eyeY - 76);
+    ctx.moveTo(cx - 20, eyeY - 84);
+    ctx.quadraticCurveTo(cx, eyeY - 40, cx + 20, eyeY - 84);
     ctx.stroke();
   }
 
   const drawEye = (ex: number, isLeft: boolean) => {
-    // Soft warm eyeshadow for bride
+    const dir = isLeft ? -1 : 1;
+
     if (role === "bride") {
-      const lidGrad = ctx.createRadialGradient(ex, eyeY - 2, 2, ex, eyeY - 2, 18);
-      lidGrad.addColorStop(0, "rgba(176, 118, 92, 0.36)");
-      lidGrad.addColorStop(1, "rgba(176, 118, 92, 0)");
+      const lidGrad = ctx.createRadialGradient(ex, eyeY - 2, 2, ex, eyeY - 2, 24);
+      lidGrad.addColorStop(0, "rgba(182, 110, 94, 0.34)");
+      lidGrad.addColorStop(1, "rgba(182, 110, 94, 0)");
       ctx.fillStyle = lidGrad;
       ctx.beginPath();
-      ctx.ellipse(ex, eyeY - 2, 18, 13, 0, 0, Math.PI * 2);
+      ctx.ellipse(ex, eyeY - 2, 24, 18, 0, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Crisp sclera almond shape
-    ctx.fillStyle = "#fffdf9";
-    ctx.beginPath();
-    ctx.ellipse(ex, eyeY, 13, 9.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Warm dark brown iris
-    ctx.fillStyle = "#2b1a13";
-    ctx.beginPath();
-    ctx.arc(ex, eyeY, 7.6, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Rich amber lower iris reflection
-    ctx.fillStyle = "#5c3928";
-    ctx.beginPath();
-    ctx.arc(ex, eyeY + 2.2, 4.2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Specular catchlight
-    ctx.fillStyle = "#ffffff";
-    ctx.beginPath();
-    ctx.arc(ex - 2.4, eyeY - 2.6, 2.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Eyeliner & lashes
-    ctx.strokeStyle = "#1d120e";
-    ctx.lineWidth = role === "bride" ? 3.0 : 2.2;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.arc(ex, eyeY + 2, 13, Math.PI * 1.15, Math.PI * 1.85);
-    ctx.stroke();
-
-    if (role === "bride") {
-      const dir = isLeft ? -1 : 1;
+    if (expression === "blink") {
+      // Affectionate happy curved-eye blink (^  ^)
+      ctx.strokeStyle = "#1c120e";
+      ctx.lineWidth = role === "bride" ? 4.4 : 4.0;
+      ctx.lineCap = "round";
       ctx.beginPath();
-      ctx.moveTo(ex + dir * 11, eyeY - 3);
-      ctx.lineTo(ex + dir * 17, eyeY - 7);
+      ctx.arc(ex, eyeY + 5, 13.5, Math.PI * 1.15, Math.PI * 1.85);
       ctx.stroke();
+
+      if (role === "bride") {
+        ctx.beginPath();
+        ctx.moveTo(ex + dir * 12, eyeY - 1);
+        ctx.lineTo(ex + dir * 20, eyeY - 6);
+        ctx.stroke();
+      }
+    } else {
+      // Expressive luminous stylized eyes clearly readable from isometric view
+      ctx.fillStyle = "#fffdf9";
+      ctx.beginPath();
+      ctx.ellipse(ex, eyeY + 1, 15.5, 16.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Rich deep espresso iris
+      ctx.fillStyle = "#22130d";
+      ctx.beginPath();
+      ctx.ellipse(ex, eyeY + 1, 12.2, 14.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Warm amber lower iris crescent glow
+      ctx.fillStyle = "#6e422b";
+      ctx.beginPath();
+      ctx.ellipse(ex, eyeY + 6.2, 8.2, 5.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Primary bright specular catchlight
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(ex - 4.0, eyeY - 4.8, 4.6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Secondary lower sparkle catchlight
+      ctx.beginPath();
+      ctx.arc(ex + 4.2, eyeY + 5.2, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Upper lash line & subtle wing
+      ctx.strokeStyle = "#1a100c";
+      ctx.lineWidth = role === "bride" ? 3.8 : 2.8;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.arc(ex, eyeY + 2, 15.5, Math.PI * 1.12, Math.PI * 1.88);
+      ctx.stroke();
+
+      if (role === "bride") {
+        ctx.beginPath();
+        ctx.moveTo(ex + dir * 13.5, eyeY - 5);
+        ctx.lineTo(ex + dir * 21, eyeY - 10);
+        ctx.stroke();
+      }
     }
 
-    // Refined arched eyebrows
+    // Refined expressive brows
     ctx.strokeStyle = "#261712";
-    ctx.lineWidth = role === "bride" ? 2.6 : 3.4;
+    ctx.lineWidth = role === "bride" ? 3.0 : 4.0;
+    ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.moveTo(ex - 13, eyeY - 14);
-    ctx.quadraticCurveTo(ex, eyeY - 19, ex + 13, eyeY - 14);
+    ctx.moveTo(ex - 13, eyeY - 22);
+    ctx.quadraticCurveTo(ex, eyeY - 27, ex + 13, eyeY - 22);
     ctx.stroke();
   };
 
   drawEye(cx - eyeDx, true);
   drawEye(cx + eyeDx, false);
 
-  // Subtle warm blush
-  [-42, 42].forEach((dx) => {
-    const blush = ctx.createRadialGradient(cx + dx, eyeY + 18, 2, cx + dx, eyeY + 18, 18);
-    blush.addColorStop(0, role === "bride" ? "rgba(228, 118, 118, 0.44)" : "rgba(216, 128, 108, 0.25)");
-    blush.addColorStop(1, "rgba(228, 118, 118, 0)");
+  // Rosy radiant cheeks
+  [-50, 50].forEach((dx) => {
+    const blush = ctx.createRadialGradient(cx + dx, eyeY + 22, 2, cx + dx, eyeY + 22, 22);
+    blush.addColorStop(
+      0,
+      role === "bride" ? "rgba(236, 118, 116, 0.52)" : "rgba(222, 128, 108, 0.34)",
+    );
+    blush.addColorStop(1, "rgba(236, 118, 116, 0)");
     ctx.fillStyle = blush;
     ctx.beginPath();
-    ctx.ellipse(cx + dx, eyeY + 18, 18, 10, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx + dx, eyeY + 22, 21, 12, 0, 0, Math.PI * 2);
     ctx.fill();
   });
 
-  // Delicate nose shadow + serene smile
-  ctx.strokeStyle = "rgba(165, 96, 68, 0.5)";
-  ctx.lineWidth = 2;
+  // Delicate nose button
+  ctx.fillStyle = "rgba(176, 102, 74, 0.45)";
   ctx.beginPath();
-  ctx.arc(cx, eyeY + 14, 4, 0.15 * Math.PI, 0.85 * Math.PI);
-  ctx.stroke();
+  ctx.arc(cx, eyeY + 17, 2.5, 0, Math.PI * 2);
+  ctx.fill();
 
+  // Warm joyful bride & groom smile
   if (role === "bride") {
-    ctx.fillStyle = "#bf5458";
+    ctx.fillStyle = "#c9525a";
     ctx.beginPath();
-    ctx.ellipse(cx, eyeY + 29, 9.5, 4.2, 0, 0, Math.PI);
+    ctx.ellipse(cx, eyeY + 30, 10.5, 4.6, 0, 0, Math.PI);
     ctx.fill();
-    ctx.strokeStyle = "#94353a";
-    ctx.lineWidth = 1.8;
+    ctx.strokeStyle = "#96333a";
+    ctx.lineWidth = 2.0;
+    ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.arc(cx, eyeY + 27, 9.5, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.arc(cx, eyeY + 27, 10.5, 0.14 * Math.PI, 0.86 * Math.PI);
     ctx.stroke();
   } else {
-    ctx.strokeStyle = "#8d493a";
-    ctx.lineWidth = 2.6;
+    ctx.strokeStyle = "#8a4234";
+    ctx.lineWidth = 3.2;
+    ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.arc(cx, eyeY + 25, 10, 0.18 * Math.PI, 0.82 * Math.PI);
+    ctx.arc(cx, eyeY + 26, 11, 0.16 * Math.PI, 0.84 * Math.PI);
     ctx.stroke();
   }
 

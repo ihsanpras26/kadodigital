@@ -85,6 +85,7 @@
   --font-display-alt: var(--font-bricolage), system-ui, sans-serif;
   --font-editorial-alt: var(--font-playfair), Georgia, serif;
   --font-hand: var(--font-caveat), cursive;
+  --font-receipt: var(--font-receipt), ui-monospace, SFMono-Regular, monospace;
 }
 
 html {
@@ -199,6 +200,305 @@ body {
 [data-desa-world] .desa-no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@keyframes desa-intro-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-desa-world] .desa-intro-fade {
+  animation: desa-intro-fade 550ms var(--ease-clean) both;
+}
+
+/* Scoped styling for Kapsul Kenangan (Private Velvet Walnut & Brushed Brass Keepsake Machine) */
+[data-gacha-world] {
+  font-family: var(--font-sans);
+  background-color: #14100e;
+  background-image:
+    radial-gradient(ellipse 75% 65% at 50% 18%, rgba(214, 165, 75, 0.16) 0%, rgba(36, 27, 22, 0.92) 52%, #120e0c 100%);
+  color: #f6efe2;
+}
+
+[data-gacha-world] ::selection {
+  background-color: #d6a54b;
+  color: #15110f;
+}
+
+[data-gacha-world] :focus-visible {
+  outline: 2.5px solid #e8c16e;
+  outline-offset: 3px;
+}
+
+[data-gacha-world] .gacha-display {
+  font-family: var(--font-bricolage), system-ui, sans-serif;
+}
+
+[data-gacha-world] .gacha-serif {
+  font-family: var(--font-instrument), var(--font-playfair), Georgia, serif;
+}
+
+[data-gacha-world] .gacha-receipt-font {
+  font-family: var(--font-receipt), ui-monospace, SFMono-Regular, monospace;
+}
+
+[data-gacha-world] .gacha-hand {
+  font-family: var(--font-caveat), cursive;
+}
+
+[data-gacha-world] .gacha-velvet-panel {
+  background: linear-gradient(165deg, rgba(38, 29, 24, 0.96) 0%, rgba(26, 20, 17, 0.98) 100%);
+  border: 1px solid rgba(232, 193, 110, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 244, 214, 0.08),
+    0 20px 44px -14px rgba(0, 0, 0, 0.65);
+}
+
+[data-gacha-world] .gacha-cotton-card {
+  background: linear-gradient(175deg, #fbf6ec 0%, #f3ead9 100%);
+  border: 1px solid rgba(110, 85, 65, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 24px 56px -14px rgba(0, 0, 0, 0.58);
+  color: #211813;
+}
+
+[data-gacha-world] .gacha-brass-btn {
+  background: linear-gradient(180deg, #f0cb78 0%, #c89436 100%);
+  border: 1px solid #f7dc96;
+  color: #1c130d;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 252, 232, 0.65),
+    0 8px 20px -6px rgba(196, 138, 43, 0.48),
+    0 2px 4px rgba(0, 0, 0, 0.45);
+  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1), filter 140ms ease, box-shadow 140ms ease;
+}
+
+[data-gacha-world] .gacha-brass-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 252, 232, 0.78),
+    0 12px 24px -6px rgba(214, 165, 75, 0.58),
+    0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+[data-gacha-world] .gacha-brass-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(0.96);
+}
+
+[data-gacha-world] .gacha-lacquer-btn {
+  background: linear-gradient(180deg, #c2392b 0%, #942217 100%);
+  border: 1px solid rgba(255, 198, 178, 0.35);
+  color: #fffaf3;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 224, 212, 0.35),
+    0 10px 24px -6px rgba(184, 49, 36, 0.52),
+    0 3px 6px rgba(0, 0, 0, 0.42);
+  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1), filter 140ms ease, box-shadow 140ms ease;
+}
+
+[data-gacha-world] .gacha-lacquer-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+[data-gacha-world] .gacha-lacquer-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(0.95);
+}
+
+[data-gacha-world] .gacha-brass-btn:disabled,
+[data-gacha-world] .gacha-lacquer-btn:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+[data-gacha-world] .gacha-scroll-dark::-webkit-scrollbar {
+  width: 6px;
+}
+
+[data-gacha-world] .gacha-scroll-dark::-webkit-scrollbar-track {
+  background: rgba(255, 244, 214, 0.04);
+}
+
+[data-gacha-world] .gacha-scroll-dark::-webkit-scrollbar-thumb {
+  background: rgba(214, 165, 75, 0.32);
+  border-radius: 999px;
+}
+
+[data-gacha-world] .gacha-receipt-teeth-top {
+  height: 10px;
+  width: 100%;
+  background-image:
+    linear-gradient(135deg, transparent 50%, #fffef9 50%),
+    linear-gradient(225deg, transparent 50%, #fffef9 50%);
+  background-position: top left;
+  background-size: 14px 10px;
+  background-repeat: repeat-x;
+}
+
+[data-gacha-world] .gacha-receipt-teeth-bottom {
+  height: 10px;
+  width: 100%;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #fffef9 50%),
+    linear-gradient(315deg, transparent 50%, #fffef9 50%);
+  background-position: bottom left;
+  background-size: 14px 10px;
+  background-repeat: repeat-x;
+}
+
+@keyframes gacha-reel-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+[data-gacha-world] .gacha-reel-spinning {
+  animation: gacha-reel-spin 2.2s linear infinite;
+}
+
+@keyframes gacha-shake-nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px) rotate(-1.5deg);
+  }
+  45% {
+    transform: translateX(6px) rotate(1.5deg);
+  }
+  70% {
+    transform: translateX(-4px) rotate(-0.8deg);
+  }
+}
+
+[data-gacha-world] .gacha-shake {
+  animation: gacha-shake-nudge 380ms ease-in-out;
+}
+
+@keyframes gacha-stamp-impact {
+  0% {
+    opacity: 0;
+    transform: scale(1.9) rotate(-18deg);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(0.92) rotate(-8deg);
+  }
+  100% {
+    opacity: 0.94;
+    transform: scale(1) rotate(-9deg);
+  }
+}
+
+[data-gacha-world] .gacha-stamp-slam {
+  animation: gacha-stamp-impact 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes gacha-coin-slot-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-24px) scale(1.05);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(-16px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.76);
+  }
+}
+
+[data-gacha-world] .gacha-coin-drop {
+  animation: gacha-coin-slot-drop 460ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ==========================================
+   ISTANA AWAN 3D (ROYAL CELESTIAL FANTASY)
+   ========================================== */
+
+[data-celestial-world] {
+  --cel-night: #080d24;
+  --cel-indigo: #11193b;
+  --cel-glass: rgba(13, 19, 43, 0.72);
+  --cel-gold: #efc86e;
+  --cel-gold-soft: #f7dc94;
+  --cel-ivory: #f8f4ea;
+  --cel-star: #9bb8ff;
+  background-color: var(--cel-night);
+  color: var(--cel-ivory);
+}
+
+[data-celestial-world] ::selection {
+  background-color: rgba(239, 200, 110, 0.28);
+  color: #fff9ec;
+}
+
+[data-celestial-world] .celestial-serif {
+  font-family: var(--font-instrument), var(--font-playfair), Georgia, serif;
+}
+
+[data-celestial-world] .celestial-mono {
+  font-family: var(--font-receipt), ui-monospace, SFMono-Regular, monospace;
+}
+
+[data-celestial-world] .celestial-glass {
+  background: linear-gradient(
+    180deg,
+    rgba(20, 29, 64, 0.82) 0%,
+    rgba(10, 15, 36, 0.9) 100%
+  );
+  border: 1px solid rgba(239, 200, 110, 0.24);
+  box-shadow:
+    0 24px 56px -18px rgba(4, 7, 20, 0.8),
+    inset 0 1px 0 rgba(255, 246, 224, 0.12);
+  backdrop-filter: blur(18px);
+}
+
+[data-celestial-world] .celestial-gold-btn {
+  background: linear-gradient(135deg, #f5da91 0%, #e0b254 55%, #c79538 100%);
+  color: #181208;
+  border: 1px solid rgba(255, 244, 214, 0.55);
+  box-shadow:
+    0 12px 28px -10px rgba(239, 200, 110, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48);
+  transition: transform 160ms var(--ease-clean), filter 160ms var(--ease-clean);
+}
+
+[data-celestial-world] .celestial-gold-btn:hover {
+  filter: brightness(1.06);
+}
+
+[data-celestial-world] .celestial-gold-btn:active {
+  transform: translateY(1px);
+}
+
+[data-celestial-world] ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+[data-celestial-world] ::-webkit-scrollbar-track {
+  background: rgba(12, 18, 42, 0.65);
+}
+
+[data-celestial-world] ::-webkit-scrollbar-thumb {
+  background: rgba(239, 200, 110, 0.35);
+  border-radius: 999px;
 }
 
 @media (prefers-reduced-motion: reduce) {

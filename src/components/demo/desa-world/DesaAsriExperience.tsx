@@ -11,7 +11,7 @@ import {
   type DesaTimeOfDay,
   type DesaWishItem,
 } from "@/data/desaWorldData";
-import { DesaAudioEngine } from "./audioEngine";
+import { DesaAudioEngine, type DesaMusicTrack } from "./audioEngine";
 import {
   CozyDesaCanvas,
   type DesaCanvasHandle,
@@ -48,6 +48,7 @@ export function DesaAsriExperience({ theme, mode }: DesaAsriExperienceProps) {
   const [selectedGender, setSelectedGender] = useState<"cewek" | "cowok">("cewek");
 
   const [musicEnabled, setMusicEnabled] = useState(true);
+  const [musicTrack, setMusicTrack] = useState<DesaMusicTrack>("senja");
   const [sfxEnabled, setSfxEnabled] = useState(true);
   const [timeOfDay, setTimeOfDay] = useState<DesaTimeOfDay>("sore");
   const [navSide, setNavSide] = useState<"left" | "right">("left");
@@ -101,15 +102,17 @@ export function DesaAsriExperience({ theme, mode }: DesaAsriExperienceProps) {
 
   const handleStartCover = useCallback(() => {
     audioRef.current?.start();
+    audioRef.current?.setMusicTrack(musicTrack);
     audioRef.current?.setMusicEnabled(musicEnabled);
     audioRef.current?.setSfxEnabled(sfxEnabled);
     audioRef.current?.setTimeOfDay(timeOfDay);
     audioRef.current?.playTap();
     setPhase("picking");
-  }, [musicEnabled, sfxEnabled, timeOfDay]);
+  }, [musicTrack, musicEnabled, sfxEnabled, timeOfDay]);
 
   const handleStartDroneIntro = useCallback(() => {
     audioRef.current?.start();
+    audioRef.current?.setMusicTrack(musicTrack);
     audioRef.current?.setMusicEnabled(musicEnabled);
     audioRef.current?.setSfxEnabled(sfxEnabled);
     audioRef.current?.setTimeOfDay(timeOfDay);
@@ -117,7 +120,7 @@ export function DesaAsriExperience({ theme, mode }: DesaAsriExperienceProps) {
     audioRef.current?.playDroneWhoosh();
     setPhase("intro");
     canvasRef.current?.startDroneIntro();
-  }, [musicEnabled, sfxEnabled, timeOfDay]);
+  }, [musicTrack, musicEnabled, sfxEnabled, timeOfDay]);
 
   const handleIntroComplete = useCallback(() => {
     audioRef.current?.playGateOpen();
@@ -138,6 +141,12 @@ export function DesaAsriExperience({ theme, mode }: DesaAsriExperienceProps) {
   const handleToggleMusic = useCallback((next: boolean) => {
     setMusicEnabled(next);
     audioRef.current?.setMusicEnabled(next);
+  }, []);
+
+  const handleChangeMusicTrack = useCallback((track: DesaMusicTrack) => {
+    setMusicTrack(track);
+    audioRef.current?.playTap();
+    audioRef.current?.setMusicTrack(track);
   }, []);
 
   const handleToggleSfx = useCallback((next: boolean) => {
@@ -351,7 +360,7 @@ export function DesaAsriExperience({ theme, mode }: DesaAsriExperienceProps) {
 
       {/* Game-Style Cinematic Drone View Intro Overlay */}
       {phase === "intro" && (
-        <div className="pointer-events-none fixed inset-0 z-30 flex flex-col justify-between">
+        <div className="desa-intro-fade pointer-events-none fixed inset-0 z-30 flex flex-col justify-between">
           <div className="h-24 bg-gradient-to-b from-[#0E1812]/50 to-transparent" />
           <div className="flex items-end justify-between gap-4 bg-gradient-to-t from-[#0E1812]/72 via-[#0E1812]/32 to-transparent px-5 pb-6 pt-16 sm:px-8 sm:pb-8">
             <div className="min-w-0 text-[#FAF6EE]">
@@ -444,6 +453,8 @@ export function DesaAsriExperience({ theme, mode }: DesaAsriExperienceProps) {
           themeSlug={theme.slug}
           musicEnabled={musicEnabled}
           onToggleMusic={handleToggleMusic}
+          musicTrack={musicTrack}
+          onChangeMusicTrack={handleChangeMusicTrack}
           sfxEnabled={sfxEnabled}
           onToggleSfx={handleToggleSfx}
           timeOfDay={timeOfDay}

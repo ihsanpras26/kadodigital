@@ -88,6 +88,178 @@ export interface VillageEnvironmentHandles {
   disposeExtras: () => void;
 }
 
+function createLimasanRoofGeometry(
+  bottomW: number,
+  bottomD: number,
+  topW: number,
+  topD: number,
+  height: number,
+  uScale = 0.28,
+  vScale = 0.52,
+): THREE.BufferGeometry {
+  const bw = bottomW * 0.5;
+  const bd = bottomD * 0.5;
+  const tw = topW * 0.5;
+  const td = topD * 0.5;
+
+  const bFL: [number, number, number] = [-bw, 0, bd];
+  const bFR: [number, number, number] = [bw, 0, bd];
+  const bBR: [number, number, number] = [bw, 0, -bd];
+  const bBL: [number, number, number] = [-bw, 0, -bd];
+
+  const tFL: [number, number, number] = [-tw, height, td];
+  const tFR: [number, number, number] = [tw, height, td];
+  const tBR: [number, number, number] = [tw, height, -td];
+  const tBL: [number, number, number] = [-tw, height, -td];
+
+  const positions: number[] = [];
+  const uvs: number[] = [];
+
+  const pushQuad = (
+    p0: [number, number, number],
+    p1: [number, number, number],
+    p2: [number, number, number],
+    p3: [number, number, number],
+    uv0: [number, number],
+    uv1: [number, number],
+    uv2: [number, number],
+    uv3: [number, number],
+  ) => {
+    positions.push(...p0, ...p1, ...p2, ...p0, ...p2, ...p3);
+    uvs.push(...uv0, ...uv1, ...uv2, ...uv0, ...uv2, ...uv3);
+  };
+
+  const slopeZ = Math.hypot(height, Math.max(0.01, bd - td));
+  const slopeX = Math.hypot(height, Math.max(0.01, bw - tw));
+
+  // Front slope (+Z)
+  pushQuad(
+    bFL,
+    bFR,
+    tFR,
+    tFL,
+    [0.5 - bw * uScale, 0],
+    [0.5 + bw * uScale, 0],
+    [0.5 + tw * uScale, slopeZ * vScale],
+    [0.5 - tw * uScale, slopeZ * vScale],
+  );
+  // Right slope (+X)
+  pushQuad(
+    bFR,
+    bBR,
+    tBR,
+    tFR,
+    [0.5 - bd * uScale, 0],
+    [0.5 + bd * uScale, 0],
+    [0.5 + td * uScale, slopeX * vScale],
+    [0.5 - td * uScale, slopeX * vScale],
+  );
+  // Back slope (-Z)
+  pushQuad(
+    bBR,
+    bBL,
+    tBL,
+    tBR,
+    [0.5 - bw * uScale, 0],
+    [0.5 + bw * uScale, 0],
+    [0.5 + tw * uScale, slopeZ * vScale],
+    [0.5 - tw * uScale, slopeZ * vScale],
+  );
+  // Left slope (-X)
+  pushQuad(
+    bBL,
+    bFL,
+    tFL,
+    tBL,
+    [0.5 - bd * uScale, 0],
+    [0.5 + bd * uScale, 0],
+    [0.5 + td * uScale, slopeX * vScale],
+    [0.5 - td * uScale, slopeX * vScale],
+  );
+
+  // Top ridge cap (+Y)
+  if (topW > 0.002 && topD > 0.002) {
+    pushQuad(
+      tFL,
+      tFR,
+      tBR,
+      tBL,
+      [0, 0],
+      [Math.max(0.1, topW * uScale), 0],
+      [Math.max(0.1, topW * uScale), Math.max(0.1, topD * uScale)],
+      [0, Math.max(0.1, topD * uScale)],
+    );
+  }
+
+  // Bottom soffit (-Y)
+  pushQuad(
+    bBL,
+    bBR,
+    bFR,
+    bFL,
+    [0, 0],
+    [0.2, 0],
+    [0.2, 0.2],
+    [0, 0.2],
+  );
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+  geo.computeVertexNormals();
+  return geo;
+}
+
+function createPalmFrondGeometry(): THREE.BufferGeometry {
+  const segs = 8;
+  const totalLen = 1.72;
+  const positions: number[] = [];
+  const indices: number[] = [];
+
+  for (let i = 0; i <= segs; i++) {
+    const t = i / segs;
+    const z = t * totalLen;
+    const y = Math.sin(t * Math.PI * 0.65) * 0.32 - Math.pow(t, 2.05) * 0.86;
+    const halfW = 0.014 + Math.sin(Math.pow(t, 0.72) * Math.PI) * 0.22;
+    const midLift = 0.036 * (1 - t * 0.45);
+    const edgeDroop = 0.042 * t;
+
+    // Left edge, Center spine, Right edge
+    positions.push(-halfW, y - edgeDroop, z);
+    positions.push(0, y + midLift, z);
+    positions.push(halfW, y - edgeDroop, z);
+  }
+
+  for (let i = 0; i < segs; i++) {
+    const r0 = i * 3;
+    const r1 = (i + 1) * 3;
+    indices.push(r0, r0 + 1, r1 + 1, r0, r1 + 1, r1);
+    indices.push(r0 + 1, r0 + 2, r1 + 2, r0 + 1, r1 + 2, r1 + 1);
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geo.setIndex(indices);
+  geo.computeVertexNormals();
+  return geo;
+}
+
+function createBambooLeafGeometry(): THREE.BufferGeometry {
+  // Curved slender pointed diamond blade pointing outward +Z
+  const positions = new Float32Array([
+    0, 0, 0,
+    -0.036, 0.015, 0.14,
+    0.036, 0.015, 0.14,
+    0, -0.025, 0.34,
+  ]);
+  const indices = [0, 1, 2, 1, 3, 2];
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geo.setIndex(indices);
+  geo.computeVertexNormals();
+  return geo;
+}
+
 export function buildVillageEnvironment(
   scene: THREE.Scene,
   payload: DesaWorldPayload,
@@ -103,6 +275,7 @@ export function buildVillageEnvironment(
   const darkWoodTex = createWoodPlankTexture("#5c3119", "#3c1e0e");
   const bambooTex = createWoodPlankTexture("#b99652", "#8e6d32");
   const roofTileTex = createRoofTileTexture("#b45338", "#7d311d");
+  const roofDarkTileTex = createRoofTileTexture("#8f3b26", "#5e2214");
   const stoneTileTex = createStoneTileTexture();
   const runnerBatikTex = createBatikParangTexture("#6b2f21", "#d9a954", "#f4e5c8");
   const gebyokTex = createGebyokTexture();
@@ -135,6 +308,7 @@ export function buildVillageEnvironment(
   const darkWoodMat = new THREE.MeshStandardMaterial({ map: darkWoodTex, roughness: 0.8 });
   const bambooMat = new THREE.MeshStandardMaterial({ map: bambooTex, roughness: 0.76 });
   const terracottaMat = new THREE.MeshStandardMaterial({ map: roofTileTex, roughness: 0.75 });
+  const roofDarkTileMat = new THREE.MeshStandardMaterial({ map: roofDarkTileTex, roughness: 0.78 });
   const roofDarkMat = new THREE.MeshStandardMaterial({ color: "#803421", roughness: 0.78 });
   const stoneTileMat = new THREE.MeshStandardMaterial({ map: stoneTileTex, roughness: 0.82 });
   const runnerBatikMat = new THREE.MeshStandardMaterial({ map: runnerBatikTex, roughness: 0.72 });
@@ -446,10 +620,18 @@ export function buildVillageEnvironment(
     });
     const floor = new THREE.Mesh(new THREE.BoxGeometry(1.35, 0.08, 1.35), woodMat);
     floor.position.y = 0.32;
-    const roof = new THREE.Mesh(new THREE.ConeGeometry(1.25, 0.72, 4), terracottaMat);
-    roof.rotation.y = Math.PI / 4;
-    roof.position.y = 1.62;
-    gubuk.add(floor, roof);
+    const roof = new THREE.Mesh(
+      createLimasanRoofGeometry(1.82, 1.82, 0.08, 0.36, 0.72),
+      terracottaMat,
+    );
+    roof.position.y = 1.28;
+    const gubukRidge = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.04, 0.04, 0.42, 8),
+      roofDarkMat,
+    );
+    gubukRidge.rotation.x = Math.PI / 2;
+    gubukRidge.position.y = 2.01;
+    gubuk.add(floor, roof, gubukRidge);
     worldGroup.add(gubuk);
   }
 
@@ -630,17 +812,60 @@ export function buildVillageEnvironment(
   beam.castShadow = true;
   gapuraGroup.add(beam);
 
-  const roofLower = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.22, 3.25), terracottaMat);
-  roofLower.position.set(0, 2.75, 0);
-  roofLower.castShadow = true;
-  const roofUpper = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.95, 0.62, 4), roofDarkMat);
-  roofUpper.rotation.y = Math.PI / 4;
-  roofUpper.scale.set(0.76, 1, 2.22);
-  roofUpper.position.set(0, 3.14, 0);
-  roofUpper.castShadow = true;
-  const ridgeFinial = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), goldMat);
-  ridgeFinial.position.set(0, 3.48, 0);
-  gapuraGroup.add(roofLower, roofUpper, ridgeFinial);
+  // Carved diagonal teak brackets (siku kayu) & transverse roof corbels
+  [-0.96, 0.96].forEach((bz) => {
+    const brace = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.38, 0.1), darkWoodMat);
+    brace.position.set(0, 2.26, bz);
+    brace.rotation.x = bz > 0 ? -0.68 : 0.68;
+    brace.castShadow = true;
+    gapuraGroup.add(brace);
+  });
+  [-1.12, 1.12].forEach((pz) => {
+    const corbel = new THREE.Mesh(new THREE.BoxGeometry(1.22, 0.1, 0.14), woodMat);
+    corbel.position.set(0, 2.55, pz);
+    corbel.castShadow = true;
+    gapuraGroup.add(corbel);
+  });
+
+  // Two-tier Javanese Gapura Limasan roof with carved eaves fascia & ridge finials
+  const gapuraFascia = new THREE.Mesh(new THREE.BoxGeometry(1.62, 0.09, 3.48), darkWoodMat);
+  gapuraFascia.position.set(0, 2.66, 0);
+  gapuraFascia.castShadow = true;
+  const gapuraTrim = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.03, 3.51), goldMat);
+  gapuraTrim.position.set(0, 2.62, 0);
+
+  const roofTier1 = new THREE.Mesh(
+    createLimasanRoofGeometry(1.74, 3.62, 0.94, 2.54, 0.42),
+    terracottaMat,
+  );
+  roofTier1.position.set(0, 2.68, 0);
+  roofTier1.castShadow = true;
+
+  const roofTier2 = new THREE.Mesh(
+    createLimasanRoofGeometry(1.0, 2.6, 0.08, 1.5, 0.56),
+    roofDarkTileMat,
+  );
+  roofTier2.position.set(0, 3.08, 0);
+  roofTier2.castShadow = true;
+
+  const gapuraRidge = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.062, 0.062, 1.56, 10),
+    roofDarkMat,
+  );
+  gapuraRidge.rotation.x = Math.PI / 2;
+  gapuraRidge.position.set(0, 3.65, 0);
+
+  const ridgeFinial = new THREE.Mesh(new THREE.OctahedronGeometry(0.11, 0), goldMat);
+  ridgeFinial.scale.set(0.75, 1.45, 0.75);
+  ridgeFinial.position.set(0, 3.78, 0);
+
+  [-0.76, 0.76].forEach((fz) => {
+    const endFinial = new THREE.Mesh(new THREE.SphereGeometry(0.065, 10, 8), goldMat);
+    endFinial.position.set(0, 3.71, fz);
+    gapuraGroup.add(endFinial);
+  });
+
+  gapuraGroup.add(gapuraFascia, gapuraTrim, roofTier1, roofTier2, gapuraRidge, ridgeFinial);
 
   // Lush Janur & Melati floral swag across the Gapura arch
   for (let i = -5; i <= 5; i++) {
@@ -777,46 +1002,70 @@ export function buildVillageEnvironment(
   const foliageDarkMat = new THREE.MeshStandardMaterial({ color: "#32693c", roughness: 0.82 });
   const foliageMidMat = new THREE.MeshStandardMaterial({ color: "#4b8c49", roughness: 0.8 });
   const foliageBrightMat = new THREE.MeshStandardMaterial({ color: "#72b04d", roughness: 0.78 });
-  const palmLeafMat = new THREE.MeshStandardMaterial({ color: "#4e9445", roughness: 0.75 });
+  const palmLeafMat = new THREE.MeshStandardMaterial({
+    color: "#4e9445",
+    roughness: 0.72,
+    side: THREE.DoubleSide,
+  });
+  const bambooLeafMat = new THREE.MeshStandardMaterial({
+    color: "#69a64c",
+    roughness: 0.74,
+    side: THREE.DoubleSide,
+  });
+  const bambooNodeMat = new THREE.MeshStandardMaterial({ color: "#4b7032", roughness: 0.8 });
+  const palmFrondGeo = createPalmFrondGeometry();
+  const bambooLeafGeo = createBambooLeafGeometry();
 
   const addCoconutPalm = (x: number, z: number, height = 3.5, lean = 0.14) => {
     const palm = new THREE.Group();
     palm.position.set(x, 0, z);
 
-    const segs = 7;
+    const segs = 9;
+    const segH = height / segs;
     for (let s = 0; s < segs; s++) {
-      const y = (s + 0.5) * (height / segs);
-      const xOff = Math.pow(s / segs, 1.5) * lean * 2.2;
+      const tMid = (s + 0.5) / segs;
+      const y = (s + 0.5) * segH;
+      const xOff = Math.pow(tMid, 1.45) * lean * 2.15;
+      const rBot = 0.145 - s * 0.008;
+      const rTop = rBot - 0.008;
       const seg = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.12 - s * 0.01, 0.155 - s * 0.01, height / segs + 0.06, 8),
+        new THREE.CylinderGeometry(rTop, rBot, segH + 0.07, 10),
         barkMat,
       );
       seg.position.set(xOff, y, 0);
-      seg.rotation.z = -lean * (s / segs);
+      seg.rotation.z = -lean * 1.08 * tMid;
       seg.castShadow = true;
       palm.add(seg);
     }
 
     const crown = new THREE.Group();
-    crown.position.set(lean * 2.2, height + 0.05, 0);
-    for (let f = 0; f < 7; f++) {
+    crown.position.set(lean * 2.12, height + 0.04, 0);
+
+    // Lower 5 arching outer fronds + 3 uplifted inner fronds using curved V-rib geometry
+    for (let f = 0; f < 5; f++) {
       const frondGroup = new THREE.Group();
-      frondGroup.rotation.y = (f / 7) * Math.PI * 2;
-      const blade1 = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.05, 0.9), palmLeafMat);
-      blade1.position.set(0, 0.04, 0.45);
-      blade1.rotation.x = -0.15;
-      blade1.castShadow = true;
-      const blade2 = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.04, 0.85), palmLeafMat);
-      blade2.position.set(0, -0.22, 1.2);
-      blade2.rotation.x = 0.52;
-      blade2.castShadow = true;
-      frondGroup.add(blade1, blade2);
+      frondGroup.rotation.y = (f / 5) * Math.PI * 2;
+      const frond = new THREE.Mesh(palmFrondGeo, palmLeafMat);
+      frond.rotation.x = 0.08;
+      frond.castShadow = true;
+      frondGroup.add(frond);
       crown.add(frondGroup);
     }
+    for (let f = 0; f < 3; f++) {
+      const frondGroup = new THREE.Group();
+      frondGroup.rotation.y = ((f + 0.45) / 3) * Math.PI * 2;
+      const frond = new THREE.Mesh(palmFrondGeo, foliageBrightMat);
+      frond.rotation.x = -0.32;
+      frond.scale.set(0.84, 0.84, 0.84);
+      frond.castShadow = true;
+      frondGroup.add(frond);
+      crown.add(frondGroup);
+    }
+
     for (let c = 0; c < 3; c++) {
       const nut = new THREE.Mesh(
-        new THREE.SphereGeometry(0.1, 8, 8),
-        new THREE.MeshStandardMaterial({ color: "#7a5329", roughness: 0.75 }),
+        new THREE.SphereGeometry(0.1, 9, 8),
+        new THREE.MeshStandardMaterial({ color: "#7a5329", roughness: 0.72 }),
       );
       nut.position.set(Math.cos(c * 2.1) * 0.14, -0.14, Math.sin(c * 2.1) * 0.14);
       crown.add(nut);
@@ -829,7 +1078,7 @@ export function buildVillageEnvironment(
       baseRotZ: 0,
       baseRotX: 0,
       speed: 1.4,
-      amp: 0.05,
+      amp: 0.045,
       phase: x * 0.7 + z * 0.5,
     });
   };
@@ -888,42 +1137,92 @@ export function buildVillageEnvironment(
   const addBambooCluster = (x: number, z: number) => {
     const clump = new THREE.Group();
     clump.position.set(x, 0, z);
-    const stalkGreen = new THREE.MeshStandardMaterial({ color: "#79a84d", roughness: 0.72 });
+    const stalkGreen = new THREE.MeshStandardMaterial({ color: "#79a84d", roughness: 0.7 });
     const offsets = [
-      { dx: -0.15, dz: -0.1, h: 2.5, r: 0.08 },
-      { dx: 0.14, dz: 0.08, h: 2.9, r: -0.07 },
-      { dx: 0.02, dz: -0.18, h: 2.2, r: 0.04 },
+      { dx: -0.18, dz: -0.12, h: 2.55, rz: 0.09, rx: -0.05, r: 0.04 },
+      { dx: 0.16, dz: 0.1, h: 2.95, rz: -0.08, rx: 0.05, r: 0.044 },
+      { dx: 0.02, dz: -0.2, h: 2.25, rz: 0.03, rx: -0.08, r: 0.036 },
+      { dx: -0.08, dz: 0.18, h: 2.4, rz: 0.06, rx: 0.07, r: 0.038 },
+      { dx: 0.14, dz: -0.08, h: 2.05, rz: -0.1, rx: -0.04, r: 0.034 },
     ];
     offsets.forEach((o) => {
-      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.065, o.h, 7), stalkGreen);
-      pole.position.set(o.dx, o.h / 2, o.dz);
-      pole.rotation.z = o.r;
+      const stalkPivot = new THREE.Group();
+      stalkPivot.position.set(o.dx, 0, o.dz);
+      stalkPivot.rotation.set(o.rx, 0, o.rz);
+
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(o.r * 0.78, o.r, o.h, 8),
+        stalkGreen,
+      );
+      pole.position.y = o.h * 0.5;
       pole.castShadow = true;
-      const tuft = new THREE.Mesh(new THREE.DodecahedronGeometry(0.34, 0), foliageBrightMat);
-      tuft.scale.set(1.2, 0.65, 1.2);
-      tuft.position.set(o.dx - o.r * 1.1, o.h, o.dz);
-      clump.add(pole, tuft);
+      stalkPivot.add(pole);
+
+      const nodeCount = Math.floor(o.h / 0.48);
+      for (let n = 1; n <= nodeCount; n++) {
+        const ny = n * 0.45;
+        const frac = ny / o.h;
+        const nr = o.r * (1 - frac * 0.2) + 0.004;
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(nr, 0.0055, 5, 10), bambooNodeMat);
+        ring.rotation.x = Math.PI / 2;
+        ring.position.y = ny;
+        stalkPivot.add(ring);
+      }
+
+      // Soft airy crown + fanning slender bamboo leaf sprays
+      [o.h - 0.34, o.h - 0.02].forEach((ly, tierIdx) => {
+        const puff = new THREE.Mesh(
+          new THREE.IcosahedronGeometry(tierIdx === 1 ? 0.2 : 0.15, 1),
+          tierIdx === 1 ? foliageBrightMat : foliageMidMat,
+        );
+        puff.scale.set(1.25, 0.56, 1.25);
+        puff.position.y = ly;
+        stalkPivot.add(puff);
+
+        const sprayCount = tierIdx === 1 ? 6 : 4;
+        for (let b = 0; b < sprayCount; b++) {
+          const leafPivot = new THREE.Group();
+          leafPivot.position.y = ly;
+          leafPivot.rotation.y = (b / sprayCount) * Math.PI * 2 + tierIdx * 0.5 + o.dx * 3;
+          const blade = new THREE.Mesh(bambooLeafGeo, bambooLeafMat);
+          blade.rotation.x = 0.22;
+          blade.scale.setScalar(tierIdx === 1 ? 1.15 : 0.92);
+          leafPivot.add(blade);
+          stalkPivot.add(leafPivot);
+        }
+      });
+
+      clump.add(stalkPivot);
     });
     worldGroup.add(clump);
+
+    swaying.push({
+      object: clump,
+      baseRotZ: 0,
+      baseRotX: 0,
+      speed: 1.35,
+      amp: 0.025,
+      phase: x * 0.6 + z * 0.4,
+    });
   };
 
   const addFlowerShrub = (x: number, z: number, bloomColor: string) => {
     const bush = new THREE.Group();
     bush.position.set(x, 0, z);
-    const leaves = new THREE.Mesh(new THREE.DodecahedronGeometry(0.32, 0), foliageMidMat);
-    leaves.scale.set(1.2, 0.75, 1.2);
+    const leaves = new THREE.Mesh(new THREE.IcosahedronGeometry(0.3, 1), foliageMidMat);
+    leaves.scale.set(1.22, 0.72, 1.22);
     leaves.position.y = 0.2;
     bush.add(leaves);
     const bMat = new THREE.MeshStandardMaterial({ color: bloomColor, roughness: 0.6 });
     for (let i = 0; i < 5; i++) {
-      const f = new THREE.Mesh(new THREE.SphereGeometry(0.07, 7, 6), bMat);
-      f.position.set(Math.cos(i * 1.25) * 0.22, 0.32 + (i % 2) * 0.06, Math.sin(i * 1.25) * 0.22);
+      const f = new THREE.Mesh(new THREE.SphereGeometry(0.068, 8, 7), bMat);
+      f.position.set(Math.cos(i * 1.25) * 0.22, 0.31 + (i % 2) * 0.06, Math.sin(i * 1.25) * 0.22);
       bush.add(f);
     }
     worldGroup.add(bush);
   };
 
-  addCoconutPalm(-8.6, 5.4, 3.3, 0.15);
+  addCoconutPalm(-9.1, 5.8, 3.3, 0.14);
   addCoconutPalm(-7.8, -1.5, 3.6, -0.12);
   addCoconutPalm(9.2, -4.6, 3.8, -0.15);
   addCoconutPalm(9.5, 1.4, 3.5, 0.14);
@@ -1121,27 +1420,40 @@ export function buildVillageEnvironment(
       });
     });
 
-    // Tumpang Sari Stepped Ceiling Frame + High-Clearance Two-Tier Genteng Joglo Roof
+    // Tumpang Sari Stepped Ceiling Frame + Authentic 2-Tier Rectangular Joglo Jawa Roof
     const tumpang1 = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.16, 3.2), darkWoodMat);
     tumpang1.position.set(0, 3.64, -0.25);
     const tumpang2 = new THREE.Mesh(new THREE.BoxGeometry(2.65, 0.15, 2.05), woodMat);
     tumpang2.position.set(0, 3.8, -0.25);
 
-    const jogloEaves = new THREE.Mesh(new THREE.ConeGeometry(3.55, 0.92, 4), terracottaMat);
-    jogloEaves.rotation.y = Math.PI / 4;
-    jogloEaves.scale.set(1.12, 1, 0.92);
-    jogloEaves.position.set(0, 4.18, -0.32);
-    jogloEaves.castShadow = true;
+    const jogloFascia = new THREE.Mesh(new THREE.BoxGeometry(5.52, 0.09, 4.72), darkWoodMat);
+    jogloFascia.position.set(0, 3.72, -0.25);
 
-    const jogloCrown = new THREE.Mesh(new THREE.ConeGeometry(1.62, 1.22, 4), roofDarkMat);
-    jogloCrown.rotation.y = Math.PI / 4;
-    jogloCrown.position.set(0, 5.02, -0.32);
-    jogloCrown.castShadow = true;
+    const jogloEaves = new THREE.Mesh(
+      createLimasanRoofGeometry(5.68, 4.88, 2.58, 2.18, 0.78, 0.24, 0.48),
+      terracottaMat,
+    );
+    jogloEaves.position.set(0, 3.75, -0.25);
+    jogloEaves.castShadow = false;
+
+    const jogloCrown = new THREE.Mesh(
+      createLimasanRoofGeometry(2.68, 2.28, 0.14, 0.64, 1.24, 0.28, 0.52),
+      roofDarkTileMat,
+    );
+    jogloCrown.position.set(0, 4.51, -0.25);
+    jogloCrown.castShadow = false;
+
+    const jogloRidge = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.07, 0.07, 0.7, 10),
+      roofDarkMat,
+    );
+    jogloRidge.rotation.x = Math.PI / 2;
+    jogloRidge.position.set(0, 5.76, -0.25);
 
     const mustaka = new THREE.Mesh(new THREE.OctahedronGeometry(0.16, 0), goldMat);
-    mustaka.scale.set(0.8, 1.5, 0.8);
-    mustaka.position.set(0, 5.72, -0.32);
-    pendopo.add(tumpang1, tumpang2, jogloEaves, jogloCrown, mustaka);
+    mustaka.scale.set(0.8, 1.55, 0.8);
+    mustaka.position.set(0, 5.93, -0.25);
+    pendopo.add(tumpang1, tumpang2, jogloFascia, jogloEaves, jogloCrown, jogloRidge, mustaka);
 
     // Glowing Brass Lampu Robyong Chandelier inside ceiling
     const robyongGroup = new THREE.Group();
@@ -1184,14 +1496,14 @@ export function buildVillageEnvironment(
       const fy = 0.85 + Math.sin(ang) * 1.55;
       const cluster = new THREE.Group();
       cluster.position.set(fx, fy, -0.38);
-      const leaf = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16, 0), foliageDarkMat);
+      const leaf = new THREE.Mesh(new THREE.IcosahedronGeometry(0.16, 1), foliageDarkMat);
       const bloom1 = new THREE.Mesh(
-        new THREE.DodecahedronGeometry(0.11, 0),
+        new THREE.IcosahedronGeometry(0.11, 1),
         i % 3 === 0 ? roseBlushMat : ivorySilkMat,
       );
       bloom1.position.set(0.05, 0.04, 0.08);
       const bloom2 = new THREE.Mesh(
-        new THREE.DodecahedronGeometry(0.08, 0),
+        new THREE.IcosahedronGeometry(0.08, 1),
         i % 2 === 0 ? goldMat : roseBlushMat,
       );
       bloom2.position.set(-0.07, -0.04, 0.07);
@@ -1203,9 +1515,9 @@ export function buildVillageEnvironment(
     [-2.05, 2.05].forEach((ux) => {
       const urn = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.14, 0.46, 12), goldMat);
       urn.position.set(ux, 0.63, 1.72);
-      const flowers = new THREE.Mesh(new THREE.DodecahedronGeometry(0.28, 0), ivorySilkMat);
+      const flowers = new THREE.Mesh(new THREE.IcosahedronGeometry(0.27, 1), ivorySilkMat);
       flowers.position.set(ux, 0.96, 1.72);
-      const roseTop = new THREE.Mesh(new THREE.DodecahedronGeometry(0.18, 0), roseBlushMat);
+      const roseTop = new THREE.Mesh(new THREE.IcosahedronGeometry(0.17, 1), roseBlushMat);
       roseTop.position.set(ux, 1.08, 1.74);
       pendopo.add(urn, flowers, roseTop);
     });
@@ -1223,8 +1535,8 @@ export function buildVillageEnvironment(
     pendopo.add(sideTable, cake1, cake2);
 
     // Mount Hero Bride & Groom cleanly at open front of Pelaminan facing +Z!
-    weddingCouple.group.position.set(0, 0, 0.68);
-    weddingCouple.group.scale.setScalar(1.16);
+    weddingCouple.group.position.set(0, 0, 0.56);
+    weddingCouple.group.scale.setScalar(1.08);
     pendopo.add(weddingCouple.group);
 
     // Twin tall Penjor arches symmetrically flanking the Pendopo steps
@@ -1257,7 +1569,7 @@ export function buildVillageEnvironment(
     book.position.set(-0.15, 0.69, 0.06);
     const vase = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.06, 0.2, 10), goldMat);
     vase.position.set(0.36, 0.76, -0.05);
-    const floral = new THREE.Mesh(new THREE.DodecahedronGeometry(0.14, 0), petalPinkMat);
+    const floral = new THREE.Mesh(new THREE.IcosahedronGeometry(0.14, 1), petalPinkMat);
     floral.position.set(0.36, 0.92, -0.05);
     deskArea.add(tableCloth, deskTop, book, vase, floral);
 
@@ -1330,7 +1642,7 @@ export function buildVillageEnvironment(
         balloons.push({ mesh: balloon, baseY: by, phase: idx * 1.4 });
       });
     } else {
-      const centerpiece = new THREE.Mesh(new THREE.DodecahedronGeometry(0.16, 0), ivorySilkMat);
+      const centerpiece = new THREE.Mesh(new THREE.IcosahedronGeometry(0.16, 1), ivorySilkMat);
       centerpiece.position.set(0.55, 0.94, -0.2);
       giftArea.add(centerpiece);
     }
@@ -1407,7 +1719,7 @@ export function buildVillageEnvironment(
     board.add(planter);
     for (let f = -3; f <= 3; f++) {
       const bloom = new THREE.Mesh(
-        new THREE.DodecahedronGeometry(0.08, 0),
+        new THREE.IcosahedronGeometry(0.08, 1),
         f % 2 === 0 ? petalPinkMat : ivorySilkMat,
       );
       bloom.position.set(f * 0.18, 0.44, 0.25);
@@ -1486,10 +1798,10 @@ export function buildVillageEnvironment(
 
     // Floral rose & greenery garland draped across the top front beam
     for (let i = -4; i <= 4; i++) {
-      const leaf = new THREE.Mesh(new THREE.DodecahedronGeometry(0.09, 0), foliageDarkMat);
+      const leaf = new THREE.Mesh(new THREE.IcosahedronGeometry(0.09, 1), foliageDarkMat);
       leaf.position.set(i * 0.2, 2.02 - Math.cos(i * 0.35) * 0.05, 0.12);
       const bloom = new THREE.Mesh(
-        new THREE.DodecahedronGeometry(0.075, 0),
+        new THREE.IcosahedronGeometry(0.075, 1),
         i % 2 === 0 ? petalPinkMat : ivorySilkMat,
       );
       bloom.position.set(i * 0.2, 2.03 - Math.cos(i * 0.35) * 0.05, 0.18);
@@ -1500,9 +1812,9 @@ export function buildVillageEnvironment(
     [-1.12, 1.12].forEach((px) => {
       const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.1, 0.26, 10), roofDarkMat);
       pot.position.set(px, 0.33, 0.16);
-      const shrub = new THREE.Mesh(new THREE.DodecahedronGeometry(0.19, 0), foliageMidMat);
+      const shrub = new THREE.Mesh(new THREE.IcosahedronGeometry(0.19, 1), foliageMidMat);
       shrub.position.set(px, 0.55, 0.16);
-      const flower = new THREE.Mesh(new THREE.DodecahedronGeometry(0.08, 0), petalPinkMat);
+      const flower = new THREE.Mesh(new THREE.IcosahedronGeometry(0.08, 1), petalPinkMat);
       flower.position.set(px, 0.68, 0.2);
       gallery.add(pot, shrub, flower);
     });
@@ -1608,6 +1920,8 @@ export function buildVillageEnvironment(
 
   const disposeExtras = () => {
     weddingCouple.dispose();
+    palmFrondGeo.dispose();
+    bambooLeafGeo.dispose();
     [
       grassTex,
       dirtTex,
@@ -1617,6 +1931,7 @@ export function buildVillageEnvironment(
       darkWoodTex,
       bambooTex,
       roofTileTex,
+      roofDarkTileTex,
       stoneTileTex,
       runnerBatikTex,
       gebyokTex,

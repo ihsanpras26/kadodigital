@@ -35,6 +35,8 @@ export const DemoArchetypeSchema = z.enum([
   "event-party",
   "desa-3d-wedding",
   "desa-3d-kado",
+  "gacha-struk",
+  "celestial-3d-wedding",
 ]);
 
 export type DemoArchetype = z.infer<typeof DemoArchetypeSchema>;

@@ -6,6 +6,7 @@ import {
   Nunito,
   Playfair_Display,
   Plus_Jakarta_Sans,
+  Space_Mono,
 } from "next/font/google";
 import "./globals.css";
 import { ChromeShell } from "@/components/layout/ChromeShell";
@@ -54,6 +55,13 @@ const caveat = Caveat({
   display: "swap",
 });
 
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-receipt",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
     default: "Kado Digital — Kado Ucapan Interaktif & Undangan Digital Modern",
@@ -79,7 +87,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${plusJakarta.variable} ${nunito.variable} ${instrumentSerif.variable} ${bricolage.variable} ${playfair.variable} ${caveat.variable}`}
+      className={`${plusJakarta.variable} ${nunito.variable} ${instrumentSerif.variable} ${bricolage.variable} ${playfair.variable} ${caveat.variable} ${spaceMono.variable}`}
     >
       <body className="min-h-screen bg-canvas text-ink antialiased">
         <ChromeShell>{children}</ChromeShell>

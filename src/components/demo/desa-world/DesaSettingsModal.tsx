@@ -4,12 +4,15 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { Compass } from "lucide-react";
 import type { DesaTimeOfDay } from "@/data/desaWorldData";
+import type { DesaMusicTrack } from "./audioEngine";
 import { VillageCloseIcon, VillageTimeIcon } from "./DesaIcons";
 
 interface DesaSettingsModalProps {
   themeSlug: string;
   musicEnabled: boolean;
   onToggleMusic: (enabled: boolean) => void;
+  musicTrack: DesaMusicTrack;
+  onChangeMusicTrack: (track: DesaMusicTrack) => void;
   sfxEnabled: boolean;
   onToggleSfx: (enabled: boolean) => void;
   timeOfDay: DesaTimeOfDay;
@@ -28,6 +31,8 @@ export function DesaSettingsModal({
   themeSlug,
   musicEnabled,
   onToggleMusic,
+  musicTrack,
+  onChangeMusicTrack,
   sfxEnabled,
   onToggleSfx,
   timeOfDay,
@@ -100,6 +105,33 @@ export function DesaSettingsModal({
                   }`}
                 >
                   {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Alunan Musik */}
+          <div>
+            <p className="mb-1.5 font-semibold text-[#3E2B1E]">Alunan Musik</p>
+            <div className="grid grid-cols-3 gap-1.5">
+              {(
+                [
+                  { id: "senja", label: "Senja" },
+                  { id: "lelagon", label: "Lelagon" },
+                  { id: "pagi", label: "Pagi" },
+                ] as const
+              ).map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => onChangeMusicTrack(t.id)}
+                  className={`min-h-[38px] rounded-[10px] border font-semibold transition ${
+                    musicTrack === t.id
+                      ? "border-[#2A5C45] bg-[#2A5C45] text-white"
+                      : "border-[#D4C2A3] bg-[#FFFDF9] text-[#3E2B1E] hover:bg-[#EFE5CE]"
+                  }`}
+                >
+                  {t.label}
                 </button>
               ))}
             </div>

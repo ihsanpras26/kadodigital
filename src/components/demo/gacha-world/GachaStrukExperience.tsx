@@ -44,6 +44,9 @@ export function GachaStrukExperience({
   const encodedParam = searchParams.get("g");
   const guestQuery = searchParams.get("to");
   const modeParam = searchParams.get("mode");
+  const isEmbed = searchParams.get("embed") === "1";
+  const startOpened = searchParams.get("open") === "1";
+  const hideStudioChrome = exclusiveMode || isEmbed;
 
   const initialOverrides = useMemo<GachaCustomOverrides>(() => {
     const decoded = decodeGiftOverrides(encodedParam);
@@ -96,7 +99,7 @@ export function GachaStrukExperience({
   const audioRef = useRef<GachaAudioEngine | null>(null);
   const timersRef = useRef<number[]>([]);
 
-  const [unsealed, setUnsealed] = useState(false);
+  const [unsealed, setUnsealed] = useState(startOpened);
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [sfxEnabled, setSfxEnabled] = useState(true);
 
@@ -274,7 +277,7 @@ export function GachaStrukExperience({
     >
       {/* Whisper Minimal Floating Top Bar (zero SaaS chrome in exclusive recipient links!) */}
       <header className="relative z-30 mx-auto flex h-16 w-full max-w-[1040px] items-center justify-between gap-2 px-4 sm:px-6">
-        {exclusiveMode ? (
+        {hideStudioChrome ? (
           <div className="min-w-0">
             <p className="gacha-serif truncate text-lg italic text-[#F7DFB0]">
               Untuk {recipientName}{" "}

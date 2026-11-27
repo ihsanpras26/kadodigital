@@ -5,7 +5,7 @@ import { CatalogExplorer } from "@/components/catalog/CatalogExplorer";
 export const metadata: Metadata = {
   title: "Katalog Tema & Produk Multi-Momen",
   description:
-    "Jelajahi tema Kado Personal (Anniversary, Ulang Tahun, Sahabat), Wedding, Save The Date, Event & Party, Lensa Momen, dan Rencana Momen.",
+    "Jelajahi tema Kado Personal (Anniversary, Ulang Tahun, Sahabat), Wedding, Save The Date, dan Event & Party.",
 };
 
 function CatalogSkeleton() {

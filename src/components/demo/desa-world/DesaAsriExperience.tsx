@@ -37,6 +37,8 @@ const TIME_ORDER: DesaTimeOfDay[] = ["pagi", "sore", "malam"];
 export function DesaAsriExperience({ theme, mode }: DesaAsriExperienceProps) {
   const searchParams = useSearchParams();
   const guestName = searchParams.get("to");
+  const startOpened = searchParams.get("open") === "1";
+  const heroShot = searchParams.get("shot") === "hero";
 
   const payload = useMemo(() => getDesaWorldPayload(mode), [mode]);
   const canvasRef = useRef<DesaCanvasHandle | null>(null);
@@ -85,14 +87,22 @@ export function DesaAsriExperience({ theme, mode }: DesaAsriExperienceProps) {
     return () => window.clearTimeout(t);
   }, [toastMsg]);
 
-  const handleLoadProgress = useCallback((pct: number) => {
-    setLoadProgress(pct);
-    if (pct >= 100) {
-      window.setTimeout(() => {
-        setPhase((cur) => (cur === "loading" ? "cover" : cur));
-      }, 150);
-    }
-  }, []);
+  const handleLoadProgress = useCallback(
+    (pct: number) => {
+      setLoadProgress(pct);
+      if (pct >= 100) {
+        window.setTimeout(() => {
+          if (startOpened) {
+            canvasRef.current?.enterWorld();
+            setPhase("world");
+            return;
+          }
+          setPhase((cur) => (cur === "loading" ? "cover" : cur));
+        }, 150);
+      }
+    },
+    [startOpened],
+  );
 
   const handleSelectGender = useCallback((g: "cewek" | "cowok") => {
     setSelectedGender(g);
@@ -302,6 +312,7 @@ export function DesaAsriExperience({ theme, mode }: DesaAsriExperienceProps) {
         payload={payload}
         phase={phase}
         overlayOpen={Boolean(activeStation || settingsOpen || mapOpen)}
+        heroShot={heroShot}
         visitedStations={visitedStations}
         onLoadProgress={handleLoadProgress}
         onReadyPortraits={setPortraits}

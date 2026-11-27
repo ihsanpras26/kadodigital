@@ -15,7 +15,7 @@ export const FAQ_ITEMS: FaqItem[] = [
     id: "faq-fokus",
     question: "Apakah Kado Digital hanya untuk kado ulang tahun & anniversary, atau bisa undangan acara juga?",
     answer:
-      "Fokus utama kami adalah kado ucapan personal yang interaktif (Anniversary, Ulang Tahun, Sahabat, LDR). Namun, kamu juga punya akses penuh ke katalog Undangan Pernikahan (termasuk tema Adat Nusantara), Save The Date, Event & Party (Wisuda, Aqiqah, Khitanan, Bukber, Hari Raya), kamera tamu Lensa Momen, hingga Rencana Momen.",
+      "Fokus utama kami adalah kado ucapan personal yang interaktif (Anniversary, Ulang Tahun, Sahabat, LDR). Namun, kamu juga punya akses penuh ke katalog Undangan Pernikahan (termasuk tema Adat Nusantara & 3D interaktif), Save The Date, serta Event & Party (Wisuda, Aqiqah, Khitanan, Bukber, Hari Raya).",
   },
   {
     id: "faq-masa-aktif",
@@ -40,11 +40,5 @@ export const FAQ_ITEMS: FaqItem[] = [
     question: "Kalau baru pesan H-1 atau mendadak hari ini, apakah masih bisa?",
     answer:
       "Untuk Mode Mandiri, kamu bisa langsung isi dan aktifkan linknya dalam hitungan menit. Jika butuh bantuan Terima Beres mendadak, tersedia add-on Express Same-Day (6–12 jam kerja) selama kuota slot harian masih terbuka.",
-  },
-  {
-    id: "faq-lensa",
-    question: "Bagaimana tamu menggunakan Lensa Momen tanpa install aplikasi?",
-    answer:
-      "Cukup cetak kartu QR dari dashboard atau bagikan link ke tamu. Saat dipindai, kamera web langsung terbuka di browser HP mereka dengan filter film pilihanmu. Setelah acara berakhir, seluruh foto tamu terbuka serentak dan bisa kamu unduh dalam satu file ZIP.",
   },
 ];

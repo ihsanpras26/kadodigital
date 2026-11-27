@@ -40,6 +40,7 @@ export function WeddingEventModules({
   const [submittedNotice, setSubmittedNotice] = useState(false);
 
   const darkAccent = isDarkHex(accent);
+  const accentInkOnWhite = darkAccent ? accent : "#6B4E16";
 
   useEffect(() => {
     const targetMs = new Date("2027-02-14T10:00:00+07:00").getTime();
@@ -112,26 +113,26 @@ export function WeddingEventModules({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Countdown & Add to Calendar */}
       <div
-        className="rounded-[24px] border bg-white p-6 text-center text-[#18181D]"
+        className="rounded-[24px] border bg-white p-4 text-center text-[#18181D] sm:p-6"
         style={{ borderColor: `${accent}3D` }}
       >
-        <span className="text-xs font-bold tracking-[0.14em] uppercase" style={{ color: accent }}>
+        <span className="text-xs font-bold tracking-[0.14em] uppercase" style={{ color: accentInkOnWhite }}>
           Menuju Hari Acara
         </span>
         <p className="mt-1 text-sm text-[#4F4B58]">{eventDetails.dateDisplay}</p>
 
-        <div className="mx-auto mt-5 grid max-w-md grid-cols-4 gap-2.5">
+        <div className="mx-auto mt-4 grid max-w-md grid-cols-4 gap-2 sm:mt-5 sm:gap-2.5">
           {[
             { label: "Hari", value: countdown.days },
             { label: "Jam", value: countdown.hours },
             { label: "Menit", value: countdown.minutes },
             { label: "Detik", value: countdown.seconds },
           ].map((box) => (
-            <div key={box.label} className="rounded-2xl p-3" style={{ backgroundColor: soft }}>
-              <p className="text-2xl font-bold tabular-nums text-[#18181D] sm:text-3xl">
+            <div key={box.label} className="rounded-2xl px-1.5 py-2.5 sm:p-3" style={{ backgroundColor: soft }}>
+              <p className="text-xl font-bold tabular-nums text-[#18181D] sm:text-3xl">
                 {String(box.value).padStart(2, "0")}
               </p>
               <p className="mt-0.5 text-[11px] font-medium text-[#4F4B58]">{box.label}</p>
@@ -142,8 +143,8 @@ export function WeddingEventModules({
         <button
           type="button"
           onClick={handleDownloadIcs}
-          className="mt-5 inline-flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-semibold transition-colors hover:bg-black/5"
-          style={{ borderColor: `${accent}55`, color: accent }}
+          className="mt-4 inline-flex h-10 items-center gap-2 rounded-full border px-4 text-xs font-semibold transition-colors hover:bg-black/5 cursor-pointer sm:mt-5"
+          style={{ borderColor: `${accentInkOnWhite}55`, color: accentInkOnWhite }}
         >
           <CalendarPlus className="h-4 w-4" />
           Simpan ke Kalender (.ics)
@@ -152,14 +153,14 @@ export function WeddingEventModules({
 
       {/* Sessions & Google Maps */}
       <div
-        className="rounded-[24px] border bg-white p-6 text-[#18181D]"
+        className="rounded-[24px] border bg-white p-4 text-[#18181D] sm:p-6"
         style={{ borderColor: `${accent}3D` }}
       >
         <h3 className="text-lg font-bold">Lokasi &amp; Rangkaian Acara</h3>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-4">
           {eventDetails.sessions.map((ses) => (
-            <div key={ses.title} className="rounded-2xl p-4" style={{ backgroundColor: soft }}>
-              <p className="text-sm font-bold" style={{ color: accent }}>
+            <div key={ses.title} className="rounded-2xl p-3.5 sm:p-4" style={{ backgroundColor: soft }}>
+              <p className="text-sm font-bold" style={{ color: accentInkOnWhite }}>
                 {ses.title}
               </p>
               <p className="mt-1 text-xs font-semibold text-[#18181D] tabular-nums">{ses.time}</p>
@@ -168,9 +169,9 @@ export function WeddingEventModules({
           ))}
         </div>
 
-        <div className="mt-4 flex flex-col justify-between gap-3 rounded-2xl border border-black/10 p-4 sm:flex-row sm:items-center">
+        <div className="mt-4 flex flex-col justify-between gap-3 rounded-2xl border border-black/10 p-3.5 sm:flex-row sm:items-center sm:p-4">
           <div className="flex items-start gap-2.5">
-            <MapPin className="mt-0.5 h-4 w-4 shrink-0" style={{ color: accent }} />
+            <MapPin className="mt-0.5 h-4 w-4 shrink-0" style={{ color: accentInkOnWhite }} />
             <div>
               <p className="text-sm font-semibold">{eventDetails.venueName}</p>
               <p className="text-xs text-[#4F4B58]">{eventDetails.venueAddress}</p>
@@ -193,7 +194,7 @@ export function WeddingEventModules({
               <button
                 type="button"
                 onClick={() => setQrOpen(true)}
-                className="inline-flex h-10 items-center gap-1.5 rounded-full border border-black/15 px-4 text-xs font-semibold text-[#18181D]"
+                className="inline-flex h-10 items-center gap-1.5 rounded-full border border-black/15 px-4 text-xs font-semibold text-[#18181D] cursor-pointer"
               >
                 <QrCode className="h-3.5 w-3.5" />
                 QR Check-in
@@ -206,14 +207,14 @@ export function WeddingEventModules({
       {/* Love Story (Wedding) */}
       {line === "wedding" && (
         <div
-          className="rounded-[24px] border bg-white p-6 text-[#18181D]"
+          className="rounded-[24px] border bg-white p-4 text-[#18181D] sm:p-6"
           style={{ borderColor: `${accent}3D` }}
         >
           <h3 className="text-lg font-bold">Love Story Mempelai</h3>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div className="mt-4 grid gap-3 sm:grid-cols-3 sm:gap-4">
             {eventDetails.loveStory.map((chapter) => (
               <div key={chapter.year} className="rounded-2xl p-4" style={{ backgroundColor: soft }}>
-                <span className="text-xs font-bold tabular-nums" style={{ color: accent }}>
+                <span className="text-xs font-bold tabular-nums" style={{ color: accentInkOnWhite }}>
                   {chapter.year}
                 </span>
                 <h4 className="mt-1 text-sm font-bold">{chapter.title}</h4>
@@ -227,12 +228,12 @@ export function WeddingEventModules({
       {/* Amplop Digital */}
       {line !== "save-the-date" && (
         <div
-          className="rounded-[24px] border bg-white p-6 text-[#18181D]"
+          className="rounded-[24px] border bg-white p-4 text-[#18181D] sm:p-6"
           style={{ borderColor: `${accent}3D` }}
         >
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase" style={{ color: accent }}>
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase" style={{ color: accentInkOnWhite }}>
                 <Wallet className="h-4 w-4" />
                 Amplop Digital
               </span>
@@ -248,8 +249,8 @@ export function WeddingEventModules({
             <button
               type="button"
               onClick={handleCopyAccount}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border px-4 text-xs font-semibold"
-              style={{ borderColor: `${accent}55`, color: accent }}
+              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border px-4 text-xs font-semibold cursor-pointer"
+              style={{ borderColor: `${accentInkOnWhite}55`, color: accentInkOnWhite }}
             >
               {copiedBank ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               {copiedBank ? "Nomor Tersalin" : "Salin Nomor Rekening"}
@@ -260,11 +261,11 @@ export function WeddingEventModules({
 
       {/* Interactive RSVP & Buku Tamu */}
       <div
-        className="rounded-[24px] border bg-white p-6 text-[#18181D]"
+        className="rounded-[24px] border bg-white p-4 text-[#18181D] sm:p-6"
         style={{ borderColor: `${accent}3D` }}
       >
         <h3 className="inline-flex items-center gap-2 text-lg font-bold">
-          <MessageSquarePlus className="h-5 w-5" style={{ color: accent }} />
+          <MessageSquarePlus className="h-5 w-5" style={{ color: accentInkOnWhite }} />
           RSVP &amp; Buku Tamu
         </h3>
 
@@ -358,20 +359,20 @@ export function WeddingEventModules({
         >
           <div className="w-full max-w-xs rounded-[24px] bg-white p-6 text-center text-[#18181D] shadow-2xl">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: accent }}>
+              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: accentInkOnWhite }}>
                 Guest on Screen Pass
               </span>
               <button
                 type="button"
                 onClick={() => setQrOpen(false)}
                 aria-label="Tutup modal QR"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-black/5"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-black/5 cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
             <div className="mx-auto my-5 flex h-40 w-40 items-center justify-center rounded-2xl border-2 border-dashed border-black/20">
-              <QrCode className="h-24 w-24" style={{ color: accent }} />
+              <QrCode className="h-24 w-24" style={{ color: accentInkOnWhite }} />
             </div>
             <p className="text-sm font-bold">Tamu Undangan</p>
             <p className="mt-1 text-xs text-[#5B5864]">

@@ -66,6 +66,10 @@ export function CelestialWeddingExperience({
   const searchParams = useSearchParams();
   const initialGuest = searchParams.get("to") ?? "";
   const gToken = searchParams.get("g");
+  const isEmbed = searchParams.get("embed") === "1";
+  const startOpened = searchParams.get("open") === "1";
+  const heroShot = searchParams.get("shot") === "hero";
+  const hideStudioChrome = exclusiveMode || isEmbed;
 
   const initialOverrides = useMemo<CelestialWeddingOverrides>(() => {
     const decoded = decodeWeddingOverrides(gToken);
@@ -94,7 +98,7 @@ export function CelestialWeddingExperience({
   const audioRef = useRef<CelestialAudioEngine | null>(null);
 
   const [phase, setPhase] = useState<"cover" | "picking" | "intro" | "world">(
-    "cover",
+    startOpened ? "world" : "cover",
   );
   const [portraits, setPortraits] = useState<{
     cewek: string;
@@ -147,6 +151,15 @@ export function CelestialWeddingExperience({
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
+
+  useEffect(() => {
+    if (!startOpened) return;
+    const t = window.setTimeout(() => {
+      canvasRef.current?.skipIntro();
+      setPhase("world");
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [startOpened]);
 
   useEffect(() => {
     if (!toastMsg) return;
@@ -366,6 +379,7 @@ export function CelestialWeddingExperience({
         photoUrls={photoUrls}
         reducedMotion={reducedMotion}
         overlayOpen={overlayOpen}
+        heroShot={heroShot}
         onReadyPortraits={setPortraits}
         onSelectStation={handleSelectStationFromWorld}
         onSelectNpc={handleSelectNpc}
@@ -378,7 +392,7 @@ export function CelestialWeddingExperience({
       <header className="pointer-events-none fixed top-0 right-0 left-0 z-20 p-3 sm:px-5 sm:py-4">
         <div className="mx-auto flex max-w-[1320px] items-center justify-between gap-2">
           <div className="pointer-events-auto flex min-w-0 items-center gap-2">
-            {!exclusiveMode && (
+            {!hideStudioChrome && (
               <Link
                 href="/katalog"
                 className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#EFC86E]/30 bg-[#0D132B]/78 px-3 text-xs font-semibold text-[#FAF6EE] backdrop-blur-md hover:bg-[#19234A]"
@@ -399,7 +413,7 @@ export function CelestialWeddingExperience({
           </div>
 
           <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2">
-            {!exclusiveMode && (
+            {!hideStudioChrome && (
               <button
                 type="button"
                 onClick={() => setDrawerOpen(true)}
@@ -441,6 +455,7 @@ export function CelestialWeddingExperience({
             <button
               type="button"
               onClick={toggleMusic}
+              aria-label={musicEnabled ? "Matikan musik" : "Nyalakan musik"}
               className={`inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold backdrop-blur-md cursor-pointer ${
                 musicEnabled
                   ? "border-[#EFC86E]/45 bg-[#1B2552]/85 text-[#F7DC94]"
@@ -452,20 +467,22 @@ export function CelestialWeddingExperience({
               ) : (
                 <VolumeX className="h-3.5 w-3.5" />
               )}
-              <span>Musik</span>
+              <span className="hidden sm:inline">Musik</span>
             </button>
 
-            <button
-              type="button"
-              onClick={toggleSfx}
-              className={`inline-flex h-9 items-center gap-1 rounded-full border px-2.5 text-xs font-semibold backdrop-blur-md cursor-pointer ${
-                sfxEnabled
-                  ? "border-[#EFC86E]/45 bg-[#1B2552]/85 text-[#F7DC94]"
-                  : "border-white/15 bg-[#0D132B]/75 text-[#8E9DC8]"
-              }`}
-            >
-              <span>SFX</span>
-            </button>
+            {!isEmbed && (
+              <button
+                type="button"
+                onClick={toggleSfx}
+                className={`inline-flex h-9 items-center gap-1 rounded-full border px-2.5 text-xs font-semibold backdrop-blur-md cursor-pointer ${
+                  sfxEnabled
+                    ? "border-[#EFC86E]/45 bg-[#1B2552]/85 text-[#F7DC94]"
+                    : "border-white/15 bg-[#0D132B]/75 text-[#8E9DC8]"
+                }`}
+              >
+                <span>SFX</span>
+              </button>
+            )}
 
             {phase === "world" && (
               <button
@@ -482,7 +499,7 @@ export function CelestialWeddingExperience({
               </button>
             )}
 
-            {!exclusiveMode && (
+            {!hideStudioChrome && (
               <Link
                 href={`/buat?tema=${theme.slug}`}
                 className="hidden h-9 items-center rounded-full border border-[#EFC86E]/40 bg-[#0D132B]/80 px-3.5 text-xs font-semibold text-[#F7DC94] backdrop-blur-md hover:bg-[#1B2552] lg:inline-flex"
@@ -551,7 +568,7 @@ export function CelestialWeddingExperience({
           )}
 
           {/* Proximity Interactive Action Pill */}
-          {proximity && !overlayOpen && (
+          {proximity && !overlayOpen && !heroShot && (
             <div className="pointer-events-none fixed inset-x-0 bottom-16 z-20 flex justify-center px-4 sm:bottom-20">
               <button
                 type="button"

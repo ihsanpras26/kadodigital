@@ -50,6 +50,7 @@ interface CozyDesaCanvasProps {
   payload: DesaWorldPayload;
   phase: DesaCanvasPhase;
   overlayOpen?: boolean;
+  heroShot?: boolean;
   visitedStations?: DesaStationId[];
   onLoadProgress: (pct: number) => void;
   onReadyPortraits: (portraits: { cewek: string; cowok: string }) => void;
@@ -198,6 +199,7 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
       payload,
       phase,
       overlayOpen = false,
+      heroShot = false,
       visitedStations = [],
       onLoadProgress,
       onReadyPortraits,
@@ -229,9 +231,11 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
       focusTarget: null as { x: number; z: number; until: number } | null,
       nearestKey: "",
       hoveredTarget: null as ProximityTarget | null,
+      heroShot: Boolean(heroShot),
     });
 
     stateRef.current.phase = phase;
+    stateRef.current.heroShot = Boolean(heroShot);
 
     const callbacksRef = useRef({
       onLoadProgress,
@@ -268,7 +272,9 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
       stateRef.current.introProgress = 1;
       stateRef.current.introFinishedSent = true;
       stateRef.current.entering = true;
-      stateRef.current.autoWalkTarget = { x: -2.7, z: 2.2 };
+      stateRef.current.autoWalkTarget = stateRef.current.heroShot
+        ? null
+        : { x: -2.7, z: 2.2 };
       callbacksRef.current.onIntroComplete();
     };
 
@@ -1215,17 +1221,23 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
           }
           const focus = stateRef.current.focusTarget;
           const useFocus = focus && now < focus.until;
-          const tx = useFocus ? focus.x : playerRig.group.position.x;
-          const tz = useFocus ? focus.z : playerRig.group.position.z;
-          camTarget.lerp(new THREE.Vector3(tx, 0.78, tz), 1 - Math.exp(-5.5 * dt));
+          if (stateRef.current.heroShot && !useFocus && !stateRef.current.autoWalkTarget) {
+            camTarget.lerp(new THREE.Vector3(2.4, 1.9, -1.2), 1 - Math.exp(-8.5 * dt));
+            desiredCamPos.set(-1.6, 5.8, 8.6);
+            camera.position.lerp(desiredCamPos, 1 - Math.exp(-8.5 * dt));
+          } else {
+            const tx = useFocus ? focus.x : playerRig.group.position.x;
+            const tz = useFocus ? focus.z : playerRig.group.position.z;
+            camTarget.lerp(new THREE.Vector3(tx, 0.78, tz), 1 - Math.exp(-5.5 * dt));
 
-          const rotOffset = baseCamOffset
-            .clone()
-            .multiplyScalar(portraitFactor * stateRef.current.orbitZoomScale)
-            .applyAxisAngle(THREE.Object3D.DEFAULT_UP, stateRef.current.orbitYawOffset);
+            const rotOffset = baseCamOffset
+              .clone()
+              .multiplyScalar(portraitFactor * stateRef.current.orbitZoomScale)
+              .applyAxisAngle(THREE.Object3D.DEFAULT_UP, stateRef.current.orbitYawOffset);
 
-          desiredCamPos.copy(camTarget).add(rotOffset);
-          camera.position.lerp(desiredCamPos, 1 - Math.exp(-5.5 * dt));
+            desiredCamPos.copy(camTarget).add(rotOffset);
+            camera.position.lerp(desiredCamPos, 1 - Math.exp(-5.5 * dt));
+          }
         }
         camera.lookAt(camTarget);
 
@@ -1328,7 +1340,7 @@ export const CozyDesaCanvas = forwardRef<DesaCanvasHandle, CozyDesaCanvasProps>(
         />
 
         {/* Projected 3D Hotspot Pins */}
-        {phase === "world" && !overlayOpen && (
+        {phase === "world" && !overlayOpen && !heroShot && (
           <div className="pointer-events-none fixed inset-0 z-20 overflow-hidden">
             {payload.stations.map((st) => {
               const visited = visitedStations.includes(st.id);

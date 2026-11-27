@@ -51,8 +51,24 @@ const CelestialWeddingExperience = dynamic(
     ),
   },
 );
+
+const LuxuryWeddingExperience = dynamic(
+  () =>
+    import("./wedding-luxury/LuxuryWeddingExperience").then(
+      (mod) => mod.LuxuryWeddingExperience,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-[#F8F7F4] text-sm font-semibold text-[#16201B]">
+        Menyiapkan undangan digital...
+      </div>
+    ),
+  },
+);
 import { getDemoPayload } from "@/data/demoContent";
 import { isDarkHex } from "@/lib/color";
+import { getThemePreviewMeta } from "@/lib/themePreviewMeta";
 import { EnvelopeCover } from "./modules/EnvelopeCover";
 import { PassphraseGate } from "./modules/PassphraseGate";
 import { FlipPhotoDeck } from "./modules/FlipPhotoDeck";
@@ -81,15 +97,28 @@ export function DemoExperienceClient({ theme }: DemoExperienceClientProps) {
 
   const searchParams = useSearchParams();
   const guestName = searchParams.get("to");
+  const isEmbed = searchParams.get("embed") === "1";
+  const startOpened = searchParams.get("open") === "1";
 
   const payload = getDemoPayload(theme);
+  const previewMeta = getThemePreviewMeta(theme);
   const { accent, base, soft } = theme.palette;
   const darkBase = isDarkHex(base);
   const darkAccent = isDarkHex(accent);
   const inkOnBase = darkBase ? "#F7F4EC" : "#18181D";
+  const cardBg = darkBase ? soft : "#FFFFFF";
+  const accentLabelColor = darkBase
+    ? !isDarkHex(accent)
+      ? accent
+      : "#E8C988"
+    : isDarkHex(accent)
+      ? accent
+      : "#6B4E16";
 
-  const [unlocked, setUnlocked] = useState(!payload.requiresPassphrase);
-  const [opened, setOpened] = useState(false);
+  const [unlocked, setUnlocked] = useState(
+    startOpened || !payload.requiresPassphrase,
+  );
+  const [opened, setOpened] = useState(startOpened);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   if (isDesa3d) {
@@ -109,6 +138,13 @@ export function DemoExperienceClient({ theme }: DemoExperienceClientProps) {
     return <CelestialWeddingExperience theme={theme} />;
   }
 
+  if (
+    theme.demoArchetype === "wedding-modern" ||
+    theme.demoArchetype === "wedding-adat"
+  ) {
+    return <LuxuryWeddingExperience theme={theme} />;
+  }
+
   const headingFontClass = FONT_MOOD[theme.typographyStyle];
 
   return (
@@ -117,46 +153,48 @@ export function DemoExperienceClient({ theme }: DemoExperienceClientProps) {
       className="min-h-[100dvh]"
       style={{ backgroundColor: base, color: inkOnBase }}
     >
-      {/* Persistent Slim Top Demo Bar */}
-      <header className="sticky top-0 z-40 border-b border-black/10 bg-white/92 text-[#16201B] backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-[1040px] items-center justify-between gap-2 px-3 sm:px-6">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <Link
-              href={`/katalog/${theme.slug}`}
-              className="inline-flex h-9 items-center gap-1 rounded-full border border-[#E4E2DC] bg-[#F8F7F4] px-3 text-xs font-semibold text-[#16201B] hover:bg-[#EFECE5]"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Kembali</span>
-            </Link>
-            <span className="truncate text-xs font-semibold">
-              DEMO — {theme.name}
-            </span>
-          </div>
+      {/* Persistent Slim Top Demo Bar (hidden inside embedded device frame) */}
+      {!isEmbed && (
+        <header className="sticky top-0 z-40 border-b border-black/10 bg-white/92 text-[#16201B] backdrop-blur-md">
+          <div className="mx-auto flex h-14 max-w-[1040px] items-center justify-between gap-2 px-3 sm:px-6">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <Link
+                href={`/katalog/${theme.slug}`}
+                className="inline-flex h-9 items-center gap-1 rounded-full border border-[#E4E2DC] bg-[#F8F7F4] px-3 text-xs font-semibold text-[#16201B] hover:bg-[#EFECE5]"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Kembali</span>
+              </Link>
+              <span className="truncate text-xs font-semibold">
+                DEMO — {theme.name}
+              </span>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setReducedMotion((prev) => !prev)}
-              aria-pressed={reducedMotion}
-              className={`inline-flex h-9 items-center rounded-full border px-3 text-xs font-semibold ${
-                reducedMotion
-                  ? "border-[#1B5E47] bg-[#E6F2EC] text-[#1B5E47]"
-                  : "border-[#E4E2DC] bg-white text-[#526058]"
-              }`}
-            >
-              Kurangi gerakan
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setReducedMotion((prev) => !prev)}
+                aria-pressed={reducedMotion}
+                className={`inline-flex h-9 items-center rounded-full border px-3 text-xs font-semibold ${
+                  reducedMotion
+                    ? "border-[#1B5E47] bg-[#E6F2EC] text-[#1B5E47]"
+                    : "border-[#E4E2DC] bg-white text-[#526058]"
+                }`}
+              >
+                Kurangi gerakan
+              </button>
 
-            <Link
-              href={`/buat?tema=${theme.slug}`}
-              className="inline-flex h-9 items-center gap-1 rounded-full bg-[#1B5E47] px-3.5 text-xs font-semibold text-white hover:bg-[#144A37]"
-            >
-              Pakai Tema Ini
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
+              <Link
+                href={`/buat?tema=${theme.slug}`}
+                className="inline-flex h-9 items-center gap-1 rounded-full bg-[#1B5E47] px-3.5 text-xs font-semibold text-white hover:bg-[#144A37]"
+              >
+                Pakai Tema Ini
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Main Scoped Product Runtime */}
       {!unlocked && payload.requiresPassphrase && payload.passphraseCode ? (
@@ -166,6 +204,7 @@ export function DemoExperienceClient({ theme }: DemoExperienceClientProps) {
           accent={accent}
           base={base}
           soft={soft}
+          fullHeight={isEmbed}
           onUnlock={() => setUnlocked(true)}
         />
       ) : !opened ? (
@@ -176,58 +215,102 @@ export function DemoExperienceClient({ theme }: DemoExperienceClientProps) {
           title={payload.coverTitle}
           subtitle={payload.coverSubtitle}
           reducedMotion={reducedMotion}
+          fullHeight={isEmbed}
           onOpen={() => setOpened(true)}
           onSkip={() => setOpened(true)}
         />
       ) : (
-        <main className="mx-auto max-w-[820px] space-y-10 px-4 py-10 sm:px-6 sm:py-14">
-          {/* Chapter 1: Hero Letter */}
+        <main
+          className={`mx-auto max-w-[820px] ${
+            isEmbed
+              ? "space-y-5 px-3 py-4 sm:space-y-8 sm:px-5 sm:py-6"
+              : "space-y-10 px-4 py-10 sm:px-6 sm:py-14"
+          }`}
+        >
+          {/* Chapter 1: Hero Letter with Integrated Cover Photo Banner */}
           <section
-            className="rounded-[28px] border p-6 shadow-sm sm:p-10"
+            className="overflow-hidden rounded-[24px] border shadow-sm sm:rounded-[28px]"
             style={{
-              backgroundColor: darkBase ? soft : "#FFFFFF",
+              backgroundColor: cardBg,
               borderColor: `${accent}3D`,
               color: inkOnBase,
             }}
           >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold"
-                style={{ backgroundColor: accent, color: darkAccent ? "#FFFFFF" : "#18181D" }}
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                {payload.eyebrow}
-              </span>
+            <div className="relative h-32 w-full overflow-hidden sm:h-44">
+              <img
+                src={previewMeta.coverSrc}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(180deg, rgba(16,20,24,0.12) 0%, ${cardBg} 100%)`,
+                }}
+              />
+            </div>
 
-              {payload.daysTogether && (
-                <span className="text-xs font-semibold opacity-80 tabular-nums">
-                  {payload.daysTogether} Hari Bersama
+            <div className="p-5 pt-2 sm:p-10 sm:pt-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold"
+                  style={{
+                    backgroundColor: accent,
+                    color: darkAccent ? "#FFFFFF" : "#18181D",
+                  }}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {payload.eyebrow}
                 </span>
+
+                {payload.daysTogether && (
+                  <span className="text-xs font-semibold opacity-80 tabular-nums">
+                    {payload.daysTogether} Hari Bersama
+                  </span>
+                )}
+              </div>
+
+              {guestName && (
+                <p
+                  className="mt-4 text-sm font-semibold"
+                  style={{ color: accentLabelColor }}
+                >
+                  Teruntuk {guestName},
+                </p>
               )}
-            </div>
 
-            {guestName && (
-              <p className="mt-4 text-sm font-semibold" style={{ color: accent }}>
-                Teruntuk {guestName},
+              <h1
+                className={`mt-3 text-2xl leading-tight font-semibold sm:mt-4 sm:text-4xl ${headingFontClass}`}
+              >
+                {payload.letterTitle}
+              </h1>
+
+              <div className="mt-4 space-y-3 text-sm leading-relaxed opacity-90 sm:mt-5 sm:space-y-4 sm:text-base">
+                {payload.letterParagraphs.map((para) => (
+                  <p key={para}>{para}</p>
+                ))}
+              </div>
+
+              <p
+                className="mt-5 text-sm font-semibold italic sm:mt-6"
+                style={{ color: accentLabelColor }}
+              >
+                {payload.letterSignOff}
               </p>
-            )}
-
-            <h1 className={`mt-4 text-3xl leading-tight font-semibold sm:text-4xl ${headingFontClass}`}>
-              {payload.letterTitle}
-            </h1>
-
-            <div className="mt-5 space-y-4 text-base leading-relaxed opacity-90">
-              {payload.letterParagraphs.map((para) => (
-                <p key={para}>{para}</p>
-              ))}
             </div>
-
-            <p className="mt-6 text-sm font-semibold italic" style={{ color: accent }}>
-              {payload.letterSignOff}
-            </p>
           </section>
 
-          {/* Chapter 2: Voice Note */}
+          {/* Event / Wedding Modules First When Present */}
+          {payload.eventDetails && (
+            <WeddingEventModules
+              line={theme.line}
+              eventDetails={payload.eventDetails}
+              accent={accent}
+              soft={darkBase ? "#F1EFEA" : soft}
+            />
+          )}
+
+          {/* Voice Note */}
           <section>
             <VoiceNotePlayer
               title={payload.voiceNoteTitle}
@@ -238,7 +321,7 @@ export function DemoExperienceClient({ theme }: DemoExperienceClientProps) {
             />
           </section>
 
-          {/* Chapter 3: Flip Photos */}
+          {/* Flip Photos */}
           <section className="space-y-4">
             <div>
               <h2 className={`text-2xl font-semibold sm:text-3xl ${headingFontClass}`}>
@@ -257,7 +340,7 @@ export function DemoExperienceClient({ theme }: DemoExperienceClientProps) {
             />
           </section>
 
-          {/* Chapter 4: Optional Memory Quiz */}
+          {/* Optional Memory Quiz */}
           {payload.quiz && (
             <section>
               <MemoryQuiz
@@ -268,15 +351,8 @@ export function DemoExperienceClient({ theme }: DemoExperienceClientProps) {
             </section>
           )}
 
-          {/* Chapter 5: Wedding / Event Modules OR Scratch Reveal */}
-          {payload.eventDetails ? (
-            <WeddingEventModules
-              line={theme.line}
-              eventDetails={payload.eventDetails}
-              accent={accent}
-              soft={darkBase ? "#F1EFEA" : soft}
-            />
-          ) : (
+          {/* Scratch Reveal for Personal Gift Themes */}
+          {!payload.eventDetails && (
             <section>
               <ScratchRevealCard
                 prompt={payload.scratchPrompt}

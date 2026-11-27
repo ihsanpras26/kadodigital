@@ -10,6 +10,7 @@ interface PassphraseGateProps {
   accent: string;
   base: string;
   soft: string;
+  fullHeight?: boolean;
   onUnlock: () => void;
 }
 
@@ -19,6 +20,7 @@ export function PassphraseGate({
   accent,
   base,
   soft,
+  fullHeight = false,
   onUnlock,
 }: PassphraseGateProps) {
   const [inputCode, setInputCode] = useState("");
@@ -45,9 +47,13 @@ export function PassphraseGate({
   };
 
   return (
-    <div className="flex min-h-[calc(100dvh-56px)] items-center justify-center px-4 py-10">
+    <div
+      className={`flex items-center justify-center px-3.5 py-6 ${
+        fullHeight ? "min-h-[100dvh]" : "min-h-[calc(100dvh-56px)]"
+      }`}
+    >
       <div
-        className="w-full max-w-md rounded-[24px] border p-7 text-center shadow-xl sm:p-9"
+        className="w-full max-w-md rounded-[24px] border p-5 text-center shadow-xl sm:p-9"
         style={{
           backgroundColor: darkBase ? soft : "#FFFFFF",
           borderColor: `${accent}55`,

@@ -86,6 +86,8 @@
   --font-editorial-alt: var(--font-playfair), Georgia, serif;
   --font-hand: var(--font-caveat), cursive;
   --font-receipt: var(--font-receipt), ui-monospace, SFMono-Regular, monospace;
+  --font-luxury: var(--font-luxury), Georgia, serif;
+  --font-script: var(--font-script), cursive;
 }
 
 html {
@@ -499,6 +501,49 @@ body {
 [data-celestial-world] ::-webkit-scrollbar-thumb {
   background: rgba(239, 200, 110, 0.35);
   border-radius: 999px;
+}
+
+@keyframes weddingVinylSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes weddingSwayGentle {
+  0%,
+  100% {
+    transform: rotate(-1.8deg);
+  }
+  50% {
+    transform: rotate(1.8deg);
+  }
+}
+
+@keyframes weddingFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .wedding-vinyl-spin {
+    animation: weddingVinylSpin 10s linear infinite;
+  }
+  .wedding-sway-gentle {
+    animation: weddingSwayGentle 7s ease-in-out infinite;
+    transform-origin: top center;
+  }
+  .wedding-fade-up {
+    animation: weddingFadeUp 0.8s cubic-bezier(0.22, 0.7, 0.2, 1) both;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

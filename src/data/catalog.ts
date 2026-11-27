@@ -64,22 +64,6 @@ export const PRODUCT_LINES: ProductLineMeta[] = [
       "Hari Raya",
     ],
   },
-  {
-    id: "lensa-momen",
-    label: "Lensa Momen",
-    shortLabel: "Lensa Momen",
-    description:
-      "Kamera tamu web via QR code tanpa install aplikasi. Semua foto terkumpul rapi dan dibuka serentak.",
-    subCategories: [],
-  },
-  {
-    id: "rencana-momen",
-    label: "Rencana Momen",
-    shortLabel: "Rencana Momen",
-    description:
-      "Workspace persiapan kado kejutan atau hari pernikahan: checklist, kalender, kanban, dan arsip dokumen.",
-    subCategories: [],
-  },
 ];
 
 export const THEME_COLORS: {
@@ -599,7 +583,7 @@ export const CATALOG_THEMES: ThemeItem[] = [
     recommendedPackages: ["Gold", "Platinum", "Diamond"],
     startingPrice: 99000,
     mechanics: ["Opening Sinematik", "Story Cards", "RSVP & Buku Tamu", "Amplop Digital"],
-    features: ["Galeri Video & Foto", "Voice Comment", "Rencana Momen Ready", "QR Check-in"],
+    features: ["Galeri Video & Foto", "Voice Comment", "Amplop Digital", "QR Check-in"],
     demoArchetype: "wedding-modern",
     typographyStyle: "editorial-serif",
     isFeatured: true,

@@ -39,8 +39,8 @@ export function ServicesCatalogClient() {
           <span className="font-serif font-normal italic text-emerald-brand">studio</span>.
         </h1>
         <p className="mt-3 text-base leading-relaxed text-muted text-pretty">
-          Mulai dari jasa Terima Beres, Express Same-Day, kamera tamu QR Lensa Momen, hingga
-          workspace Rencana Momen.
+          Mulai dari jasa Terima Beres, Express Same-Day, kuota Smart Kirim WhatsApp, hingga
+          custom ilustrasi untuk mempercantik kado dan undangan digitalmu.
         </p>
       </div>
 

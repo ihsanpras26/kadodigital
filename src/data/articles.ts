@@ -72,31 +72,6 @@ export const BLOG_ARTICLES: ArticleItem[] = [
     ],
   },
   {
-    slug: "memaksimalkan-lensa-momen-di-pesta-ulang-tahun",
-    title: "Biar Foto Pesta Nggak Nyangkut di HP Tamu: Mengenal Lensa Momen",
-    category: "Tips Acara",
-    publishedAt: "06 November 2026",
-    readingTime: "3 menit baca",
-    excerpt:
-      "Taruh satu kartu QR di meja makan atau photobooth. Tamu memotret langsung dari browser dengan filter film, lalu semua foto terbuka serentak.",
-    recommendedThemeSlug: "confetti-atelier",
-    recommendedThemeName: "Confetti Atelier",
-    sections: [
-      {
-        heading: "Kenapa grup chat sering gagal mengumpulkan foto acara?",
-        paragraphs: [
-          "Setelah acara selesai, foto sering terpotong kompresi chat atau tertunda dikirim berhari-hari. Dengan Lensa Momen, tamu cukup memindai QR code di meja, tidak perlu unduh aplikasi, dan hasil jepretan langsung tersimpan rapi di galeri acara.",
-        ],
-      },
-      {
-        heading: "Sensasi kamera sekali pakai yang lebih jujur",
-        paragraphs: [
-          "Aktifkan filter analog dan mode tanpa preview agar tamu fokus menikmati pesta, lalu bagikan momen 'Reveal' galeri bersama keesokan harinya.",
-        ],
-      },
-    ],
-  },
-  {
     slug: "mandiri-atau-terima-beres-mana-yang-cocok",
     title: "Buat Sendiri vs Terima Beres: Panduan Memilih Mode di Kado Digital",
     category: "Panduan Studio",

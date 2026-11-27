@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import type { ThemeItem } from "@/lib/schemas";
 import { formatRupiah } from "@/lib/format";
-import { ThemeArtwork } from "./ThemeArtwork";
+import { LiveDeviceStage } from "./LiveDeviceStage";
 import { ThemeCard } from "./ThemeCard";
 
 interface ThemeDetailClientProps {
@@ -47,14 +47,14 @@ export function ThemeDetailClient({ theme, related }: ThemeDetailClientProps) {
       </Link>
 
       <div className="mt-6 grid items-start gap-10 lg:grid-cols-12">
-        {/* Left: Interactive Device Preview */}
-        <div className="rounded-[24px] border border-hairline bg-subtle p-5 sm:p-7 lg:col-span-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
+        {/* Left: Live Interactive Device Preview */}
+        <div className="rounded-[24px] border border-hairline bg-subtle p-4 sm:p-7 lg:col-span-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3">
             <div className="inline-flex rounded-full border border-hairline bg-surface p-1">
               <button
                 type="button"
                 onClick={() => setDevice("mobile")}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold ${
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold cursor-pointer ${
                   device === "mobile" ? "bg-emerald-brand text-white" : "text-muted"
                 }`}
               >
@@ -64,7 +64,7 @@ export function ThemeDetailClient({ theme, related }: ThemeDetailClientProps) {
               <button
                 type="button"
                 onClick={() => setDevice("desktop")}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold ${
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold cursor-pointer ${
                   device === "desktop" ? "bg-emerald-brand text-white" : "text-muted"
                 }`}
               >
@@ -82,22 +82,18 @@ export function ThemeDetailClient({ theme, related }: ThemeDetailClientProps) {
             </Link>
           </div>
 
+          <p className="mb-5 text-center text-xs font-medium text-muted">
+            Tampilan real saat tema sudah dibuka — coba gulir &amp; uji fitur di layar, atau ganti ke Sampul Pembuka.
+          </p>
+
           <div className="flex justify-center">
-            <div
-              className={`w-full transition-all duration-300 ${
-                device === "mobile" ? "max-w-[330px]" : "max-w-full"
-              }`}
-            >
-              <div className="rounded-[22px] border border-hairline bg-surface p-3 shadow-[var(--shadow-stage)]">
-                <ThemeArtwork theme={theme} />
-              </div>
-            </div>
+            <LiveDeviceStage theme={theme} device={device} />
           </div>
 
           <div className="mt-5 flex justify-center">
             <Link
               href={`/demo/${theme.slug}`}
-              className="inline-flex h-11 items-center gap-2 rounded-full bg-surface px-5 text-sm font-semibold text-ink border border-hairline hover:border-emerald-brand"
+              className="inline-flex h-11 items-center gap-2 rounded-full border border-hairline bg-surface px-5 text-sm font-semibold text-ink hover:border-emerald-brand"
             >
               <Play className="h-4 w-4 text-emerald-brand" />
               Mainkan Demo Interaktif Penuh

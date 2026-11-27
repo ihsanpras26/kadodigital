@@ -5,8 +5,6 @@ export const ProductLineSchema = z.enum([
   "wedding",
   "save-the-date",
   "event-party",
-  "lensa-momen",
-  "rencana-momen",
 ]);
 
 export type ProductLine = z.infer<typeof ProductLineSchema>;

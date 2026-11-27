@@ -81,16 +81,6 @@ export function Footer() {
                   Event & Party
                 </Link>
               </li>
-              <li>
-                <Link href="/katalog?lini=lensa-momen" className="hover:text-emerald-brand">
-                  Lensa Momen (Guest Cam)
-                </Link>
-              </li>
-              <li>
-                <Link href="/katalog?lini=rencana-momen" className="hover:text-emerald-brand">
-                  Rencana Momen (Planner)
-                </Link>
-              </li>
             </ul>
           </div>
 

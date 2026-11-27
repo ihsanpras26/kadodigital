@@ -33,40 +33,6 @@ export const STUDIO_SERVICES: StudioServiceItem[] = [
     actionLabel: "Pesan Terima Beres",
   },
   {
-    id: "svc-lensa-momen",
-    slug: "lensa-momen-standar",
-    title: "Lensa Momen — Kamera Tamu QR",
-    category: "Add-on Digital",
-    price: 79000,
-    originalPrice: 119000,
-    summary:
-      "Ubah setiap HP tamu di acara ulang tahun, anniversary dinner, atau pernikahan menjadi kamera analog bersama tanpa perlu install aplikasi.",
-    deliverables: [
-      "Poster & kartu meja QR siap cetak",
-      "Pilihan filter film permanen selama acara",
-      "Reveal galeri serentak + unduh 1 klik ZIP",
-    ],
-    badge: "Event Add-on",
-    actionHref: "/katalog?lini=lensa-momen",
-    actionLabel: "Konfigurasi Lensa Momen",
-  },
-  {
-    id: "svc-rencana-momen",
-    slug: "rencana-momen-planner",
-    title: "Rencana Momen — Event & Gift Planner",
-    category: "Add-on Digital",
-    price: 79000,
-    summary:
-      "Workspace persiapan acara dari H-90 hingga hari-H: unlimited checklist, jadwal kalender, papan kanban, dan cloud arsip dokumen.",
-    deliverables: [
-      "Akses penuh selamanya (sekali bayar)",
-      "Gratis untuk pengguna paket Signature & Diamond",
-      "Sinkron dengan countdown undangan/kado",
-    ],
-    actionHref: "/katalog?lini=rencana-momen",
-    actionLabel: "Lihat Preview Planner",
-  },
-  {
     id: "svc-express-sameday",
     slug: "express-same-day",
     title: "Express Same-Day (6–12 Jam Jadi)",

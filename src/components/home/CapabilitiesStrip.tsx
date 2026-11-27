@@ -3,8 +3,8 @@ import { Layers, Lock, Sparkles, Users } from "lucide-react";
 const PILLARS = [
   {
     icon: Layers,
-    title: "6 Lini Momen Lengkap",
-    detail: "Kado Personal, Wedding, Save The Date, Event & Party, Lensa Momen, & Rencana Momen.",
+    title: "4 Lini Momen Lengkap",
+    detail: "Kado Personal, Wedding, Save The Date, hingga Event & Party dalam satu platform.",
   },
   {
     icon: Sparkles,

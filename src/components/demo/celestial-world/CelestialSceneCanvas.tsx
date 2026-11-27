@@ -61,6 +61,7 @@ interface CelestialSceneCanvasProps {
   photoUrls: string[];
   reducedMotion?: boolean;
   overlayOpen?: boolean;
+  heroShot?: boolean;
   onReadyPortraits: (portraits: { cewek: string; cowok: string }) => void;
   onSelectStation: (stationId: CelestialStationId) => void;
   onSelectNpc: (npcId: string) => void;
@@ -168,6 +169,7 @@ export const CelestialSceneCanvas = forwardRef<
     photoUrls,
     reducedMotion = false,
     overlayOpen = false,
+    heroShot = false,
     onReadyPortraits,
     onSelectStation,
     onSelectNpc,
@@ -195,6 +197,7 @@ export const CelestialSceneCanvas = forwardRef<
   const atmosphereRef = useRef<CelestialAtmosphere>(atmosphere);
   const reducedMotionRef = useRef<boolean>(reducedMotion);
   const overlayOpenRef = useRef<boolean>(overlayOpen);
+  const heroShotRef = useRef<boolean>(heroShot);
   const coupleDisplayRef = useRef<string>(coupleDisplay);
 
   const callbacksRef = useRef({
@@ -223,6 +226,9 @@ export const CelestialSceneCanvas = forwardRef<
   useEffect(() => {
     overlayOpenRef.current = overlayOpen;
   }, [overlayOpen]);
+  useEffect(() => {
+    heroShotRef.current = heroShot;
+  }, [heroShot]);
   useEffect(() => {
     coupleDisplayRef.current = coupleDisplay;
   }, [coupleDisplay]);
@@ -509,6 +515,13 @@ export const CelestialSceneCanvas = forwardRef<
 
     const liveCamPos = camera.position.clone();
     const liveCamTarget = new THREE.Vector3(0, 1.8, 0);
+    if (heroShotRef.current) {
+      flightStateRef.current.mode = "station";
+      flightStateRef.current.desiredPos.set(5.6, 4.7, 9.6);
+      flightStateRef.current.desiredTarget.set(0, 2.1, -1.2);
+      liveCamPos.copy(flightStateRef.current.desiredPos);
+      liveCamTarget.copy(flightStateRef.current.desiredTarget);
+    }
     const tmpPos = new THREE.Vector3();
     const tmpTarget = new THREE.Vector3();
 

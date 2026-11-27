@@ -1,510 +1,174 @@
 import type { ThemeItem } from "@/lib/schemas";
 import { isDarkHex } from "@/lib/color";
+import { getThemePreviewMeta } from "@/lib/themePreviewMeta";
 
 interface ThemeArtworkProps {
   theme: ThemeItem;
   compact?: boolean;
+  aspectClass?: string;
 }
 
-const TYPOGRAPHY_CLASS: Record<ThemeItem["typographyStyle"], string> = {
-  "editorial-serif": "font-editorial-alt",
-  "playful-display": "font-display-alt",
-  "handwritten-warm": "font-hand",
-  "nocturne-classic": "font-editorial-alt",
-  "modern-clean": "font-sans",
-  "nusantara-regal": "font-editorial-alt",
-};
-
-export function ThemeArtwork({ theme, compact = false }: ThemeArtworkProps) {
-  const { accent, base, soft } = theme.palette;
-  const darkBase = isDarkHex(base);
-  const darkAccent = isDarkHex(accent);
-  const inkOnBase = darkBase ? "#F7F4EC" : "#1B1921";
-  const mutedOnBase = darkBase ? "rgba(247,244,236,0.68)" : "rgba(27,25,33,0.62)";
-  const inkOnAccent = darkAccent ? "#FFFFFF" : "#18181D";
-  const fontClass = TYPOGRAPHY_CLASS[theme.typographyStyle];
+function MiniStatusBar({
+  darkSurface = true,
+  bgColor,
+}: {
+  darkSurface?: boolean;
+  bgColor: string;
+}) {
+  const textTone = darkSurface ? "text-white/95" : "text-[#16201B]";
+  const barTone = darkSurface ? "bg-white/90" : "bg-[#16201B]/85";
 
   return (
     <div
-      className="relative aspect-[4/5] w-full overflow-hidden rounded-[16px] border border-hairline/70 select-none"
-      style={{ backgroundColor: base, color: inkOnBase }}
+      className={`relative z-20 flex h-[17px] shrink-0 items-center justify-between px-2 text-[6.5px] font-semibold tracking-tight ${textTone} ${
+        darkSurface ? "" : "border-b border-black/5"
+      }`}
+      style={{ backgroundColor: bgColor }}
+    >
+      <span className="tabular-nums leading-none">9:41</span>
+      <span className="flex h-[6.5px] w-[26px] items-center justify-end rounded-full bg-[#07090C] px-1 ring-1 ring-white/10">
+        <span className="h-[2.5px] w-[2.5px] rounded-full bg-[#1C2C4A]" />
+      </span>
+      <span className="flex items-center gap-[1.5px]">
+        <span className={`h-[3.5px] w-[1.5px] rounded-full ${barTone}`} />
+        <span className={`h-[4.5px] w-[1.5px] rounded-full ${barTone}`} />
+        <span className={`h-[5.5px] w-[1.5px] rounded-full ${barTone}`} />
+        <span
+          className={`ml-0.5 flex h-[5.5px] w-[9px] items-center rounded-[1.5px] border p-[1px] ${
+            darkSurface ? "border-white/75" : "border-[#16201B]/70"
+          }`}
+        >
+          <span className={`h-full w-[75%] rounded-[1px] ${barTone}`} />
+        </span>
+      </span>
+    </div>
+  );
+}
+
+export function ThemeArtwork({
+  theme,
+  aspectClass = "aspect-[4/5]",
+}: ThemeArtworkProps) {
+  const { accent, base, soft } = theme.palette;
+  const darkBase = isDarkHex(base);
+  const spec = getThemePreviewMeta(theme);
+
+  const isCelestial3d = theme.demoArchetype === "celestial-3d-wedding";
+  const isDesa3d =
+    theme.demoArchetype === "desa-3d-wedding" ||
+    theme.demoArchetype === "desa-3d-kado";
+  const isGacha = theme.demoArchetype === "gacha-struk";
+  const darkStatusBar = darkBase || isCelestial3d || isDesa3d || isGacha;
+
+  const statusBarBg = isCelestial3d
+    ? "#080D24"
+    : isGacha
+      ? "#14100E"
+      : isDesa3d
+        ? "#142119"
+        : theme.slug === "royal-sogan"
+          ? "#EADBC0"
+          : theme.slug === "minang-heritage"
+            ? "#480D17"
+            : theme.slug === "serene-garden"
+              ? "#466658"
+              : theme.slug === "atelier-noir"
+                ? "#0E0F12"
+                : base;
+
+  const coverDarkStatus =
+    darkStatusBar ||
+    theme.slug === "minang-heritage" ||
+    theme.slug === "serene-garden" ||
+    theme.slug === "atelier-noir" ||
+    theme.slug === "lumiere-motion" ||
+    theme.slug === "island-hearth";
+
+  const studioBg =
+    isCelestial3d
+      ? "radial-gradient(circle at 75% 20%, rgba(239,200,110,0.18) 0%, #12172B 68%, #0B0F1E 100%)"
+      : isGacha
+        ? "radial-gradient(circle at 75% 22%, rgba(214,165,75,0.22) 0%, #1D1512 65%, #120D0B 100%)"
+        : darkBase
+          ? `radial-gradient(circle at 75% 18%, ${accent}24 0%, #151926 70%, #0E111B 100%)`
+          : `radial-gradient(circle at 75% 15%, ${soft} 0%, #EDEAE2 65%, #E4E0D6 100%)`;
+
+  return (
+    <div
+      className={`relative flex w-full flex-col overflow-hidden rounded-[16px] border border-hairline/80 select-none ${aspectClass}`}
+      style={{ background: studioBg }}
       aria-hidden="true"
     >
-      {/* Subtle geometric backdrop tailored by archetype */}
-      {theme.demoArchetype === "celestial-3d-wedding" && (
-        <div className="relative flex h-full flex-col justify-between overflow-hidden bg-[#0D132B] p-4 text-[#FAF6EE]">
-          <img
-            src="/themes/istana-awan/card-cover.jpg"
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(8,13,36,0.22) 0%, rgba(8,13,36,0.12) 45%, rgba(8,13,36,0.88) 100%)",
-            }}
-          />
-
-          {/* Keep top-left clear for ThemeCard outer badge */}
-          <div className="relative z-10 flex items-center justify-end">
-            <span className="rounded-full border border-[#EFC86E]/45 bg-[#0D132B]/78 px-2.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-[#F7DC94] backdrop-blur-md">
-              3D · 360°
-            </span>
-          </div>
-
-          <div className="relative z-10 mt-auto rounded-2xl border border-[#EFC86E]/35 bg-[#0D132B]/76 px-3.5 py-3 text-center backdrop-blur-md">
-            <p className="font-mono text-[9.5px] font-semibold tracking-[0.2em] text-[#EFC86E] uppercase">
-              Undangan 3D Fantasy
-            </p>
-            <p className={`mt-1 text-lg leading-tight italic text-[#FAF6EE] ${fontClass}`}>
-              Raka &amp; Nadya
-            </p>
-            <p className="mt-1 text-[10.5px] text-[#CBD6F6]">
-              Istana Awan · Bintang Doa
-            </p>
-          </div>
-        </div>
-      )}
-
-      {theme.demoArchetype === "gacha-struk" && (
-        <div
-          className="relative flex h-full flex-col justify-between overflow-hidden p-4 text-[#F6EFE2]"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 70% at 50% 25%, rgba(214,165,75,0.22) 0%, #1C1613 62%, #120E0C 100%)",
-          }}
+      {/* Top Bar Inside Card: Top-Left Safe Zone 100% Empty for ThemeCard Badge */}
+      <div className="relative z-10 flex items-center justify-end px-3 pt-3">
+        <span
+          className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold tracking-wider backdrop-blur-md ${
+            isCelestial3d || isGacha || darkBase
+              ? "border border-[#EFC86E]/40 bg-[#121626]/82 text-[#F7DC94]"
+              : "border border-black/10 bg-[#FFFDF8]/88 text-ink"
+          }`}
         >
-          <div className="flex items-center justify-between gap-2">
-            <span className="rounded-full border border-[#E8C16E]/45 bg-[#942217] px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-[#FFFAF3] uppercase">
-              Link Pribadi /k/
-            </span>
-            <span className="font-mono text-[10px] font-bold text-[#E8C16E]">
-              PIN · 360°
-            </span>
-          </div>
+          {spec.topTag}
+        </span>
+      </div>
 
-          {/* Miniature Walnut & Lacquer Crimson Keepsake Machine + Peeking 35mm Film Photo */}
-          <div className="relative mx-auto flex w-full max-w-[206px] items-end justify-center pt-1">
-            {/* Tilted 35mm Film Polaroid behind right edge */}
-            <div className="absolute -right-2 bottom-2 z-0 w-[96px] rotate-6 rounded-lg border border-[#221914]/30 bg-[#FBF6EC] p-1.5 shadow-lg">
-              <img
-                src="/themes/kapsul-kenangan/coffee-rain.jpg"
-                alt=""
-                className="h-[58px] w-full rounded object-cover"
+      {/* Inveet-Style Dual-Screen Real Preview Stage */}
+      <div className="relative z-10 flex flex-1 items-center justify-center gap-2.5 px-3 pt-6 pb-3.5">
+        {/* LEFT DEVICE: Titanium iPhone Bezel Showing Real Cover Screen */}
+        <div className="relative w-[48%] transition-transform duration-500 ease-out group-hover:-translate-y-1">
+          {/* Side Hardware Buttons */}
+          <span className="absolute top-[22%] -left-[2px] h-3.5 w-[2px] rounded-l-full bg-[#4B5261]" />
+          <span className="absolute top-[33%] -left-[2px] h-5 w-[2px] rounded-l-full bg-[#4B5261]" />
+          <span className="absolute top-[28%] -right-[2px] h-5 w-[2px] rounded-r-full bg-[#4B5261]" />
+
+          <div className="aspect-[9/18.2] w-full rounded-[22px] bg-gradient-to-b from-[#343A46] via-[#171A21] to-[#0D0F14] p-[3.5px] ring-1 ring-white/25 shadow-[0_18px_32px_-12px_rgba(8,12,18,0.55)]">
+            <div
+              className="relative flex h-full w-full flex-col overflow-hidden rounded-[18.5px]"
+              style={{ backgroundColor: statusBarBg }}
+            >
+              <MiniStatusBar
+                darkSurface={coverDarkStatus}
+                bgColor={statusBarBg}
               />
-              <p className="mt-1 truncate text-center font-hand text-[11px] leading-none text-[#211813]">
-                14 Feb 2025
-              </p>
-            </div>
 
-            <div className="relative z-10 flex w-[144px] flex-col items-center">
-              {/* Backlit Glass Dome */}
-              <div
-                className="relative flex h-[84px] w-[126px] items-end justify-center overflow-hidden rounded-t-[60px] border border-[#E8C16E]/45 px-2 pb-1.5 shadow-inner"
-                style={{
-                  background:
-                    "radial-gradient(circle at 45% 40%, #FAF3E6 0%, #DFCFB4 80%)",
-                }}
-              >
-                <div className="pointer-events-none absolute top-2 left-3 h-10 w-4 -rotate-12 rounded-full bg-white/55" />
-                <div className="grid grid-cols-3 gap-1">
-                  {[
-                    "#B83124",
-                    "#2D6A4F",
-                    "#D6A54B",
-                    "#325788",
-                    "#B83124",
-                    "#2D6A4F",
-                  ].map((col, i) => (
-                    <span
-                      key={i}
-                      className="relative block h-6 w-6 overflow-hidden rounded-full border border-[#221914]/65 shadow-xs"
-                    >
-                      <span
-                        className="block h-1/2 w-full"
-                        style={{ backgroundColor: col }}
-                      />
-                      <span className="block h-[2px] w-full bg-[#D6A54B]" />
-                      <span className="block h-1/2 w-full bg-[#FAF4E8]" />
-                    </span>
-                  ))}
-                </div>
+              <div className="relative flex-1 overflow-hidden">
+                <img
+                  src={`/themes/real-previews/${theme.slug}-cover.jpg`}
+                  alt=""
+                  loading="lazy"
+                  className="h-full w-full object-cover object-top"
+                />
               </div>
 
-              {/* Lacquer Crimson & Brass Chassis */}
-              <div
-                className="relative -mt-0.5 flex w-[138px] items-center justify-between rounded-b-[16px] border border-[#E8C16E]/40 px-3 py-2.5 shadow-xl"
-                style={{
-                  background: "linear-gradient(180deg, #B83124 0%, #831B12 100%)",
-                }}
-              >
-                <div className="flex h-9 w-8 items-center justify-center rounded-md border border-[#E8C16E]/45 bg-[#1B130F]">
-                  <span className="block h-4 w-4 rounded-full bg-[#D6A54B]" />
-                </div>
-
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E8C16E] bg-[#F7EEDB] shadow-sm">
-                  <div className="h-2 w-7 rotate-12 rounded-full border border-[#7A5316] bg-[#E3B44E]" />
-                </div>
-
-                <div className="w-10 rounded-xs bg-[#FFFEF9] px-1 py-0.5 text-center shadow-sm">
-                  <p className="font-mono text-[6.5px] leading-none font-bold text-[#221914]">
-                    STRUK
-                  </p>
-                  <p className="mt-0.5 inline-block -rotate-6 border border-[#C8281D] px-0.5 font-mono text-[7px] leading-none font-bold text-[#C8281D]">
-                    LUNAS
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="text-center font-mono text-[10px] tracking-tight text-[#DFCEB2]">
-            Segel Lilin · Foto 35mm · Struk 9:16
-          </div>
-        </div>
-      )}
-
-      {(theme.demoArchetype === "desa-3d-wedding" || theme.demoArchetype === "desa-3d-kado") && (
-        <div className="relative flex h-full flex-col justify-between overflow-hidden p-4">
-          <img
-            src={
-              theme.demoArchetype === "desa-3d-wedding"
-                ? "/themes/desa-asri/scene-3.png"
-                : "/themes/desa-asri/scene-1.png"
-            }
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(19,38,30,0.42) 0%, rgba(19,38,30,0.12) 45%, rgba(28,16,10,0.72) 100%)",
-            }}
-          />
-
-          <div className="relative z-10 flex items-center justify-between gap-2">
-            <span className="rounded-full bg-[#2D6A4F]/95 px-2.5 py-1 text-[10px] font-bold tracking-wider text-[#F8F2E6] uppercase shadow-xs">
-              3D Dunia Desa
-            </span>
-            <span className="rounded-full bg-[#F8F2E6]/95 px-2.5 py-0.5 text-[10px] font-semibold text-[#4B2616]">
-              {theme.demoArchetype === "desa-3d-wedding" ? "Pendopo" : "Saung"}
-            </span>
-          </div>
-
-          <div className="relative z-10 mx-auto w-full max-w-[202px] rounded-xl border-2 border-[#4B2616] bg-[#6B3A24] p-3 text-center shadow-md">
-            <div className="rounded-lg border border-[#EADBC6]/35 bg-[#F8F2E6] px-3 py-2.5 text-[#3B1E11]">
-              <p className="text-[9px] font-bold tracking-[0.18em] text-[#2D6A4F] uppercase">
-                {theme.demoArchetype === "desa-3d-wedding" ? "Undangan 3D" : "Kado 3D"}
-              </p>
-              <p className={`mt-1 text-base leading-tight font-bold ${fontClass}`}>
-                {theme.demoArchetype === "desa-3d-wedding" ? "Raka & Nadya" : "Untuk Nadya"}
-              </p>
-              <p className="mt-1 text-[10px] font-semibold text-[#79533D]">
-                Jalan-jalan di Desa Asri →
-              </p>
-            </div>
-          </div>
-
-          <div className="relative z-10 text-center text-[11px] font-semibold text-[#F8F2E6] drop-shadow-xs">
-            Sawah · Jembatan · Kunang-kunang
-          </div>
-        </div>
-      )}
-
-      {theme.demoArchetype === "anniversary-letter" && (
-        <div className="flex h-full flex-col items-center justify-between p-5">
-          <div className="flex w-full items-center justify-between text-[10px] tracking-[0.18em] uppercase" style={{ color: mutedOnBase }}>
-            <span>{theme.subCategory}</span>
-            <span>03 Bab</span>
-          </div>
-
-          {/* Stacked stationery cards + wax seal */}
-          <div className="relative flex w-full max-w-[196px] flex-col items-center">
-            <div
-              className="absolute -top-3 -right-2 h-24 w-20 rotate-6 rounded-lg border shadow-xs"
-              style={{ backgroundColor: soft, borderColor: `${accent}33` }}
-            >
-              <div className="m-2 h-14 rounded-sm opacity-60" style={{ backgroundColor: accent }} />
-            </div>
-
-            <div
-              className="relative z-10 w-full rounded-xl border p-4 shadow-sm"
-              style={{
-                backgroundColor: darkBase ? "#23253D" : "#FFFFFF",
-                borderColor: `${accent}2E`,
-              }}
-            >
-              <p className="text-[10px] tracking-[0.14em] uppercase" style={{ color: accent }}>
-                Untukmu
-              </p>
-              <p className={`mt-1 text-xl leading-tight font-semibold ${fontClass}`}>
-                Dua Tahun &amp; Setiap Kopi Pagi
-              </p>
-              <div className="mt-3 flex items-center justify-between border-t pt-2.5" style={{ borderColor: `${accent}22` }}>
-                <span className="text-[11px]" style={{ color: mutedOnBase }}>
-                  Ketuk segel
-                </span>
+              <div className="pointer-events-none absolute right-0 bottom-1 left-0 z-20 flex justify-center">
                 <span
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold shadow-xs"
-                  style={{ backgroundColor: accent, color: inkOnAccent }}
-                >
-                  KD
-                </span>
+                  className={`h-[2px] w-8 rounded-full ${
+                    coverDarkStatus ? "bg-white/45" : "bg-[#18201B]/25"
+                  }`}
+                />
               </div>
-            </div>
-          </div>
 
-          <div
-            className="rounded-full px-3 py-1 text-[11px] font-medium"
-            style={{ backgroundColor: soft, color: darkBase ? "#F7F4EC" : "#1B1921" }}
-          >
-            Amplop · Flip Foto · Gores
+              <div className="pointer-events-none absolute inset-0 z-20 rounded-[18.5px] bg-gradient-to-tr from-white/0 via-white/[0.03] to-white/12" />
+            </div>
           </div>
         </div>
-      )}
 
-      {theme.demoArchetype === "birthday-unwrapped" && (
-        <div className="flex h-full flex-col justify-between p-5">
-          <div className="flex items-center justify-between">
-            <span
-              className="rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase"
-              style={{ backgroundColor: soft, color: "#1B1830" }}
-            >
-              {theme.subCategory}
-            </span>
-            <span className="h-3 w-3 rotate-45 rounded-[2px]" style={{ backgroundColor: accent }} />
-          </div>
-
-          <div className="relative mx-auto w-full max-w-[198px]">
-            <div
-              className="relative rounded-2xl border-2 p-4 shadow-sm"
-              style={{ backgroundColor: "#FFFFFF", borderColor: accent }}
-            >
-              {/* Ribbon cross */}
-              <div
-                className="mx-auto mb-2.5 flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
-                style={{ backgroundColor: accent, color: inkOnAccent }}
-              >
-                ★
-              </div>
-              <p className={`text-center text-lg leading-tight font-bold text-[#1B1830] ${fontClass}`}>
-                Selamat Tambah Usia, Raka!
-              </p>
-              <p className="mt-1.5 text-center text-[11px] text-[#5B566E]">
-                Tarik pita &amp; jawab 3 kuis seru
-              </p>
-              <div
-                className="mt-3 rounded-full py-1.5 text-center text-[11px] font-semibold"
-                style={{ backgroundColor: soft, color: "#1B1830" }}
-              >
-                Buka Kejutan →
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-center gap-1.5">
-            <span className="h-2 w-6 rounded-full" style={{ backgroundColor: accent }} />
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: soft }} />
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: accent, opacity: 0.4 }} />
-          </div>
+        {/* RIGHT CARD: Elevated Inside Real Demo View */}
+        <div
+          className={`relative aspect-[9/17] w-[46%] -translate-y-2 overflow-hidden rounded-[13px] border transition-transform duration-500 ease-out group-hover:-translate-y-3 ${
+            darkBase || isCelestial3d || isGacha
+              ? "border-white/20 shadow-[0_20px_36px_-14px_rgba(0,0,0,0.68)]"
+              : "border-black/10 shadow-[0_20px_36px_-14px_rgba(16,22,20,0.34)]"
+          }`}
+        >
+          <img
+            src={`/themes/real-previews/${theme.slug}.jpg`}
+            alt=""
+            loading="lazy"
+            className="h-full w-full object-cover object-top"
+          />
         </div>
-      )}
-
-      {theme.demoArchetype === "polaroid-memoir" && (
-        <div className="flex h-full flex-col justify-between p-5">
-          <div className="flex items-center justify-between text-[10px] tracking-[0.14em] uppercase" style={{ color: mutedOnBase }}>
-            <span>Polaroid Deck</span>
-            <span>Sahabat</span>
-          </div>
-
-          <div className="relative mx-auto flex h-44 w-full max-w-[196px] items-center justify-center">
-            <div
-              className="absolute left-2 top-3 h-36 w-28 -rotate-6 rounded-lg border bg-white p-2 shadow-xs"
-              style={{ borderColor: `${accent}30` }}
-            >
-              <div className="h-24 rounded-sm" style={{ backgroundColor: soft }} />
-              <p className="mt-1.5 font-hand text-xs text-[#2B2623]">Kopi sore 2024</p>
-            </div>
-            <div
-              className="relative z-10 ml-8 h-38 w-32 rotate-4 rounded-lg border bg-white p-2.5 shadow-sm"
-              style={{ borderColor: `${accent}44` }}
-            >
-              <div
-                className="mx-auto -mt-4 mb-1.5 h-3 w-12 rounded-xs opacity-85"
-                style={{ backgroundColor: accent }}
-              />
-              <div className="flex h-22 items-center justify-center rounded-sm p-2 text-center" style={{ backgroundColor: soft }}>
-                <span className="font-hand text-base font-bold text-[#2B2623]">
-                  Balik buat baca catatan!
-                </span>
-              </div>
-              <p className="mt-1.5 font-hand text-sm text-[#2B2623]">Tim Anti Wacana</p>
-            </div>
-          </div>
-
-          <p className={`text-center text-base font-semibold ${fontClass}`} style={{ color: accent }}>
-            8 foto + voice note geng
-          </p>
-        </div>
-      )}
-
-      {theme.demoArchetype === "nocturne-keepsake" && (
-        <div className="flex h-full flex-col justify-between p-5">
-          <div className="flex items-center justify-between text-[10px] tracking-[0.2em] uppercase" style={{ color: mutedOnBase }}>
-            <span>00:00 WIB</span>
-            <span>Terjadwal</span>
-          </div>
-
-          <div
-            className="mx-auto flex w-full max-w-[192px] flex-col items-center rounded-t-full rounded-b-2xl border px-4 py-6 text-center"
-            style={{ borderColor: `${accent}55`, backgroundColor: soft }}
-          >
-            <div
-              className="mb-3 flex h-8 w-8 items-center justify-center rounded-full border text-xs"
-              style={{ borderColor: accent, color: accent }}
-            >
-              ✦
-            </div>
-            <p className={`text-lg leading-snug italic ${fontClass}`} style={{ color: inkOnBase }}>
-              Untuk kamu di kota seberang
-            </p>
-            <div
-              className="mt-3 rounded-full border px-3 py-1 text-[10px] tracking-widest uppercase"
-              style={{ borderColor: `${accent}66`, color: accent }}
-            >
-              Kode · ••••
-            </div>
-          </div>
-
-          <div className="flex items-center justify-center gap-2 text-[11px]" style={{ color: mutedOnBase }}>
-            <span>Surat Malam</span>
-            <span>·</span>
-            <span>Voice Note</span>
-          </div>
-        </div>
-      )}
-
-      {(theme.demoArchetype === "wedding-modern" || theme.demoArchetype === "wedding-adat") && (
-        <div className="flex h-full flex-col items-center justify-between p-5 text-center">
-          <div className="flex w-full items-center justify-between text-[10px] tracking-[0.16em] uppercase" style={{ color: mutedOnBase }}>
-            <span>{theme.demoArchetype === "wedding-adat" ? "Adat Nusantara" : "The Wedding"}</span>
-            <span>RSVP</span>
-          </div>
-
-          <div
-            className={`flex w-full max-w-[188px] flex-col items-center border px-4 py-5 ${
-              theme.demoArchetype === "wedding-adat"
-                ? "rounded-xl border-double border-4"
-                : "rounded-t-full rounded-b-xl"
-            }`}
-            style={{
-              borderColor: `${accent}66`,
-              backgroundColor: darkBase ? soft : "#FFFFFF",
-            }}
-          >
-            {theme.demoArchetype === "wedding-adat" && (
-              <span className="mb-1 text-xs" style={{ color: accent }}>
-                ❖ ❖ ❖
-              </span>
-            )}
-            <p className="text-[10px] tracking-[0.2em] uppercase" style={{ color: mutedOnBase }}>
-              Walimatul Ursy
-            </p>
-            <p className={`mt-2 text-2xl leading-none font-medium ${fontClass}`} style={{ color: inkOnBase }}>
-              Alya &amp; Dimas
-            </p>
-            <span className="my-2.5 h-px w-10" style={{ backgroundColor: accent }} />
-            <p className="text-[11px] tabular-nums" style={{ color: mutedOnBase }}>
-              14 · 02 · 2027
-            </p>
-            <div
-              className="mt-3 rounded-full px-3 py-1 text-[10px] font-semibold"
-              style={{ backgroundColor: accent, color: inkOnAccent }}
-            >
-              Buka Undangan
-            </div>
-          </div>
-
-          <div className="text-[11px]" style={{ color: mutedOnBase }}>
-            Maps · Amplop Digital · QR Check-in
-          </div>
-        </div>
-      )}
-
-      {theme.demoArchetype === "save-the-date" && (
-        <div className="flex h-full flex-col items-center justify-between p-5 text-center">
-          <span className="text-[10px] font-semibold tracking-[0.22em] uppercase" style={{ color: accent }}>
-            Save The Date
-          </span>
-          <div
-            className="w-full max-w-[186px] rounded-2xl border p-4"
-            style={{ borderColor: `${accent}44`, backgroundColor: darkBase ? soft : "#FFFFFF" }}
-          >
-            <p className="text-[11px] uppercase tracking-widest" style={{ color: mutedOnBase }}>
-              Kunci Tanggalnya
-            </p>
-            <p className={`mt-1 text-3xl font-bold tabular-nums ${fontClass}`} style={{ color: accent }}>
-              22·08
-            </p>
-            <p className={`mt-1 text-base font-medium ${fontClass}`} style={{ color: inkOnBase }}>
-              Nadia &amp; Farhan
-            </p>
-          </div>
-          <div
-            className="rounded-full px-3 py-1 text-[11px] font-medium"
-            style={{ backgroundColor: soft, color: inkOnBase }}
-          >
-            + Simpan ke Kalender
-          </div>
-        </div>
-      )}
-
-      {theme.demoArchetype === "event-party" && (
-        <div className="flex h-full flex-col justify-between p-5">
-          <div className="flex items-center justify-between">
-            <span
-              className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
-              style={{ backgroundColor: soft, color: inkOnBase }}
-            >
-              {theme.subCategory}
-            </span>
-            <span className="text-xs font-semibold" style={{ color: accent }}>
-              RSVP
-            </span>
-          </div>
-
-          <div
-            className="mx-auto w-full max-w-[192px] rounded-2xl border p-4 text-center"
-            style={{ backgroundColor: "#FFFFFF", borderColor: `${accent}3D` }}
-          >
-            <p className="text-[10px] tracking-[0.16em] uppercase text-[#66606D]">
-              Kamu Diundang ke
-            </p>
-            <p className={`mt-1.5 text-lg leading-tight font-bold text-[#18181E] ${fontClass}`}>
-              {theme.subCategory === "Wisuda" && "Syukuran Wisuda S.Kom"}
-              {theme.subCategory === "Aqiqah" && "Tasyakuran Aqiqah Zayd"}
-              {theme.subCategory === "Khitanan" && "Walimatul Khitan Rayyan"}
-              {theme.subCategory === "Bukber" && "Bukber & Reuni 2027"}
-              {theme.subCategory === "Hari Raya" && "Silaturahmi & Open House"}
-              {theme.subCategory === "Birthday Party" && "Kezia's 23rd Dinner"}
-            </p>
-            <div
-              className="mt-3 rounded-full py-1 text-[11px] font-semibold"
-              style={{ backgroundColor: accent, color: inkOnAccent }}
-            >
-              Konfirmasi Hadir
-            </div>
-          </div>
-
-          {!compact && (
-            <div className="text-center text-[11px]" style={{ color: mutedOnBase }}>
-              Peta Lokasi · Galeri · Ucapan Tamu
-            </div>
-          )}
-        </div>
-      )}
+      </div>
     </div>
   );
 }

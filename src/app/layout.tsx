@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import {
   Bricolage_Grotesque,
   Caveat,
+  Cormorant_Garamond,
   Instrument_Serif,
   Nunito,
+  Parisienne,
   Playfair_Display,
   Plus_Jakarta_Sans,
   Space_Mono,
@@ -62,6 +64,21 @@ const spaceMono = Space_Mono({
   display: "swap",
 });
 
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-luxury",
+  display: "swap",
+});
+
+const parisienne = Parisienne({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-script",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
     default: "Kado Digital — Kado Ucapan Interaktif & Undangan Digital Modern",
@@ -87,7 +104,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${plusJakarta.variable} ${nunito.variable} ${instrumentSerif.variable} ${bricolage.variable} ${playfair.variable} ${caveat.variable} ${spaceMono.variable}`}
+      className={`${plusJakarta.variable} ${nunito.variable} ${instrumentSerif.variable} ${bricolage.variable} ${playfair.variable} ${caveat.variable} ${spaceMono.variable} ${cormorant.variable} ${parisienne.variable}`}
     >
       <body className="min-h-screen bg-canvas text-ink antialiased">
         <ChromeShell>{children}</ChromeShell>

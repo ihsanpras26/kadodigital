@@ -6,7 +6,7 @@ import { BLOG_ARTICLES } from "@/data/articles";
 export const metadata: Metadata = {
   title: "Inspirasi & Panduan Merangkai Kado",
   description:
-    "Artikel praktis menulis surat anniversary, ide kejutan LDR, hingga memaksimalkan Lensa Momen saat acara.",
+    "Artikel praktis menulis surat anniversary, ide kejutan LDR, hingga panduan memilih mode Buat Sendiri atau Terima Beres.",
 };
 
 export default function BlogPage() {
